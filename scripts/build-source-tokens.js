@@ -148,7 +148,7 @@ function getNum(name) {
   return flat[name] !== undefined ? flat[name] : null;
 }
 
-const typeStyles = ["label", "subheadline", "paragraph"];
+const typeStyles = ["display", "heading", "subheading", "label", "subheadline", "paragraph", "code"];
 for (const style of typeStyles) {
   const family = getNum(`type/family/${style}`);
   if (family !== null) setToken(tokens.typography, ["fontFamily", style], family, "fontFamily");
@@ -173,15 +173,73 @@ if (flat["font/paragraphIndent/none"] !== undefined) {
 
 // Composite text styles, referencing the atoms above via Style Dictionary
 // reference syntax so a change to an atom propagates automatically.
+// Composite text styles, referencing the atoms above via Style Dictionary
+// reference syntax so a change to an atom propagates automatically.
+//
+// Generated from the Figma "TYPOGRAPHY SYSTEM OVERVIEW" frame (node
+// 9640-130857). Tuple layout:
+//   [family, sizeStep, WeightLabel, famKey, sizeKey, weightKey, letterKey]
 const textStyleDefs = [
-  ["label", "small", "Regular", "label", "small", "regular", "12"],
-  ["label", "small", "Medium", "label", "small", "medium", "12"],
-  ["label", "medium", "Regular", "label", "medium", "regular", "14"],
-  ["label", "x-large", "Regular", "label", "x-large", "regular", "18"],
-  ["subheadline", "medium", "Regular", "subheadline", "medium", "regular", "24"],
-  ["subheadline", "small", "Regular", "subheadline", "small", "regular", "20"],
-  ["paragraph", "large", "Regular", "paragraph", "large", "regular", "16"],
-  ["paragraph", "medium", "Regular", "paragraph", "medium", "regular", "14"],
+  ["display","large","Regular","display","large","regular","96"],
+  ["display","large","Medium","display","large","medium","96"],
+  ["display","large","Bold","display","large","bold","96"],
+  ["display","medium","Regular","display","medium","regular","72"],
+  ["display","medium","Medium","display","medium","medium","72"],
+  ["display","medium","Bold","display","medium","bold","72"],
+  ["display","small","Regular","display","small","regular","60"],
+  ["display","small","Medium","display","small","medium","60"],
+  ["display","small","Bold","display","small","bold","60"],
+  ["heading","large","Regular","heading","large","regular","48"],
+  ["heading","large","Medium","heading","large","medium","48"],
+  ["heading","large","Bold","heading","large","bold","48"],
+  ["heading","medium","Regular","heading","medium","regular","40"],
+  ["heading","medium","Medium","heading","medium","medium","40"],
+  ["heading","medium","Bold","heading","medium","bold","40"],
+  ["heading","small","Regular","heading","small","regular","32"],
+  ["heading","small","Medium","heading","small","medium","32"],
+  ["heading","small","Bold","heading","small","bold","32"],
+  ["subheading","large","Regular","subheading","large","regular","28"],
+  ["subheading","large","Medium","subheading","large","medium","28"],
+  ["subheading","large","Bold","subheading","large","bold","28"],
+  ["subheading","medium","Regular","subheading","medium","regular","24"],
+  ["subheading","medium","Medium","subheading","medium","medium","24"],
+  ["subheading","medium","Bold","subheading","medium","bold","24"],
+  ["subheading","small","Regular","subheading","small","regular","20"],
+  ["subheading","small","Medium","subheading","small","medium","20"],
+  ["subheading","small","Bold","subheading","small","bold","20"],
+  ["label","x-large","Regular","label","x-large","regular","18"],
+  ["label","x-large","Medium","label","x-large","medium","18"],
+  ["label","x-large","Semibold","label","x-large","semibold","18"],
+  ["label","large","Regular","label","large","regular","16"],
+  ["label","large","Medium","label","large","medium","16"],
+  ["label","large","Semibold","label","large","semibold","16"],
+  ["label","medium","Regular","label","medium","regular","14"],
+  ["label","medium","Medium","label","medium","medium","14"],
+  ["label","medium","Semibold","label","medium","semibold","14"],
+  ["label","small","Regular","label","small","regular","12"],
+  ["label","small","Medium","label","small","medium","12"],
+  ["label","small","Semibold","label","small","semibold","12"],
+  ["label","x-small","Regular","label","x-small","regular","10"],
+  ["label","x-small","Medium","label","x-small","medium","10"],
+  ["label","x-small","Semibold","label","x-small","semibold","10"],
+  ["paragraph","x-large","Regular","paragraph","x-large","regular","18"],
+  ["paragraph","x-large","Medium","paragraph","x-large","medium","18"],
+  ["paragraph","x-large","Semibold","paragraph","x-large","semibold","18"],
+  ["paragraph","large","Regular","paragraph","large","regular","16"],
+  ["paragraph","large","Medium","paragraph","large","medium","16"],
+  ["paragraph","large","Semibold","paragraph","large","semibold","16"],
+  ["paragraph","medium","Regular","paragraph","medium","regular","14"],
+  ["paragraph","medium","Medium","paragraph","medium","medium","14"],
+  ["paragraph","medium","Semibold","paragraph","medium","semibold","14"],
+  ["paragraph","small","Regular","paragraph","small","regular","12"],
+  ["paragraph","small","Medium","paragraph","small","medium","12"],
+  ["paragraph","small","Semibold","paragraph","small","semibold","12"],
+  ["paragraph","x-small","Regular","paragraph","x-small","regular","10"],
+  ["paragraph","x-small","Medium","paragraph","x-small","medium","10"],
+  ["paragraph","x-small","Semibold","paragraph","x-small","semibold","10"],
+  ["code","default","Regular","code","default","regular","12"],
+  ["code","default","Medium","code","default","medium","12"],
+  ["code","default","Semibold","code","default","semibold","12"],
 ];
 tokens.typography.textStyle = {};
 for (const [family, sizeStep, weightLabel, famKey, sizeKey, weightKey, letterKey] of textStyleDefs) {

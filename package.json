@@ -1,7 +1,7 @@
 {
   "name": "micro-design-system",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "description": "Design tokens pipeline: Figma variables -> Style Dictionary -> CSS custom properties + Tailwind theme, previewed in Storybook. Radix UI primitives are installed and ready for the component layer.",
   "scripts": {
     "tokens:from-figma": "node scripts/build-source-tokens.js",
