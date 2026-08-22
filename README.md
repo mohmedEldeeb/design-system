@@ -7,6 +7,9 @@ a Tailwind theme, previewed live in Storybook. It's deliberately scoped to
 is installed and ready for that next phase; pair its unstyled primitives
 with the Tailwind classes this pipeline generates.
 
+> 📖 **New here?** Start with [docs/HOW-IT-WORKS.md](./docs/HOW-IT-WORKS.md) —
+> a guided tour of every folder and how the Figma → tokens → UI pipeline works.
+
 ## How it fits together
 
 ```
@@ -132,6 +135,8 @@ same way once the component layer exists.
 
 ## Known gaps / next steps
 
+- **Dark mode** is planned — see [docs/DARK-MODE-SPEC.md](./docs/DARK-MODE-SPEC.md) for
+  the full spec, phased implementation plan, and verification checklist.
 - Only the four sections under Figma's "Color Tokens" page were pulled.
   If there are more variable collections elsewhere in the file (e.g. a
   dedicated spacing or typography page), fetch those too and add them to

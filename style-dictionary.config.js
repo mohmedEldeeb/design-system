@@ -32,7 +32,8 @@ function shadowLayerToCss(layer) {
 StyleDictionary.registerFormat({
   name: "custom/css-variables",
   format: async ({ dictionary }) => {
-    const lines = [];
+    const light = [];
+    const dark = [];
     for (const token of dictionary.allTokens) {
       if (token.type === "typography") continue; // composite - see Tailwind output instead
       let value;
@@ -44,9 +45,16 @@ StyleDictionary.registerFormat({
       } else {
         value = token.value;
       }
-      lines.push(`  ${cssVarName(token)}: ${value};`);
+      light.push(`  ${cssVarName(token)}: ${value};`);
+      if (typeof token.darkValue === "string") {
+        dark.push(`  ${cssVarName(token)}: ${token.darkValue};`);
+      }
     }
-    return `:root {\n${lines.join("\n")}\n}\n`;
+    let out = `:root {\n${light.join("\n")}\n}\n`;
+    if (dark.length > 0) {
+      out += `\n[data-theme="dark"] {\n${dark.join("\n")}\n}\n`;
+    }
+    return out;
   },
 });
 
@@ -77,7 +85,9 @@ StyleDictionary.registerFormat({
       const [category, ...rest] = token.path;
 
       if (category === "color") {
-        setDeep(colors, rest, token.value);
+        // Reference the CSS custom property so utilities follow the active
+        // theme (light/dark) instead of baking in a light-mode hex value.
+        setDeep(colors, rest, `var(${cssVarName(token)})`);
       } else if (category === "spacing") {
         spacing[rest[0]] = token.value;
       } else if (category === "radius") {

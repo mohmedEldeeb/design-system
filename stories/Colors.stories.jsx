@@ -1,6 +1,7 @@
 import React from "react";
 import { action } from "@storybook/addon-actions";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
+import flatTokens from "../dist/json/tokens.json";
 
 const CATEGORY_META = {
   text: { prefix: "text", tailwind: "text", description: "Text color tokens — applied via text-{token}" },
@@ -14,7 +15,8 @@ function flattenColors(obj, category, prefix = []) {
   for (const [key, value] of Object.entries(obj)) {
     const path = [...prefix, key];
     if (typeof value === "string") {
-      out.push({ name: path.join("-"), value, category });
+      const name = path.join("-");
+      out.push({ name, value, hex: flatTokens[`color.${name}`], category });
     } else {
       out.push(...flattenColors(value, category, path));
     }
@@ -38,7 +40,9 @@ function SwatchGrid({ colors }) {
           <div style={{ height: "64px", background: c.value, borderBottom: "1px solid #e0e0e0" }} />
           <div style={{ padding: "10px 12px" }}>
             <div style={{ fontSize: "11px", fontWeight: 600, wordBreak: "break-word", lineHeight: 1.4 }}>{c.name}</div>
-            <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>{c.value}</div>
+            <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>
+              {c.hex} <span style={{ opacity: 0.7 }}>(light)</span>
+            </div>
           </div>
         </div>
       ))}

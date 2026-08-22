@@ -290,6 +290,39 @@ for (const step of shadowSteps) {
 }
 
 // ---------------------------------------------------------------------------
+// 8.5 Dark theme overrides (tokens/dark-theme.json, dot-path keyed)
+//
+//     { "color.background.error.vibrant.default": "#…", … }
+//
+// Values attach to the matching color token as `darkValue`. See
+// docs/DARK-MODE-SPEC.md. Placeholder values come from
+// scripts/build-dark-theme.js; replace with real Figma dark-mode values.
+// ---------------------------------------------------------------------------
+const DARK_FILE = path.join(__dirname, "..", "tokens", "dark-theme.json");
+if (fs.existsSync(DARK_FILE)) {
+  const dark = JSON.parse(fs.readFileSync(DARK_FILE, "utf8"));
+  let matched = 0;
+  const applyDark = (node, parts) => {
+    for (const [key, child] of Object.entries(node)) {
+      if (!child || typeof child !== "object") continue;
+      if ("value" in child) {
+        const dotPath = ["color", ...parts, key].join(".");
+        if (child.type === "color" && typeof dark[dotPath] === "string") {
+          child.darkValue = dark[dotPath];
+          matched++;
+        }
+      } else {
+        applyDark(child, [...parts, key]);
+      }
+    }
+  };
+  for (const bucket of ["text", "icon", "border", "background"]) {
+    if (tokens.color[bucket]) applyDark(tokens.color[bucket], [bucket]);
+  }
+  console.log(`Attached ${matched} dark theme values from tokens/dark-theme.json`);
+}
+
+// ---------------------------------------------------------------------------
 // write
 // ---------------------------------------------------------------------------
 fs.writeFileSync(OUT_FILE, JSON.stringify(tokens, null, 2) + "\n");

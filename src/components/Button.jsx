@@ -203,7 +203,7 @@ export function Button({
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "background 120ms ease, border-color 120ms ease, color 120ms ease",
         outline: "none",
-        boxShadow: focused && !disabled ? `0 0 0 2px #ffffff, 0 0 0 4px ${focusColor}` : "none",
+        boxShadow: focused && !disabled ? `0 0 0 2px var(--color-background-static-default), 0 0 0 4px ${focusColor}` : "none",
         background,
         border: `1px solid ${borderColor}`,
         color,

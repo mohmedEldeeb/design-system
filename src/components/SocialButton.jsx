@@ -99,7 +99,7 @@ export function SocialButton({
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "background 120ms ease, border-color 120ms ease",
         outline: "none",
-        boxShadow: focused && !disabled ? `0 0 0 2px #ffffff, 0 0 0 4px ${v("border.fill.secondary.default")}` : "none",
+        boxShadow: focused && !disabled ? `0 0 0 2px var(--color-background-static-default), 0 0 0 4px ${v("border.fill.secondary.default")}` : "none",
         background,
         border: `1px solid ${borderColor}`,
         color,

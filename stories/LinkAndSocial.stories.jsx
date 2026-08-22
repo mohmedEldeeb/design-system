@@ -12,7 +12,7 @@ const BRANDS = ["apple", "google", "facebook", "linkedin", "x", "github"];
 // ---------------------------------------------------------------------------
 function LinkPlaygroundRender({ type, size, label, fab, disabled, leftIcon, rightIcon }) {
   return (
-    <div style={{ padding: "40px", background: type === "inverted" ? "#141414" : "#fafafa" }}>
+    <div style={{ padding: "40px", background: type === "inverted" ? "var(--color-background-fill-inverted-default)" : "var(--color-background-surface-secondary)" }}>
       <LinkButton
         type={type}
         size={size}
@@ -65,7 +65,7 @@ export function LinkAllStates() {
             marginBottom: "32px",
             padding: "20px",
             borderRadius: "12px",
-            background: type === "inverted" ? "#141414" : "transparent",
+            background: type === "inverted" ? "var(--color-background-fill-inverted-default)" : "transparent",
           }}
         >
           <h2 style={{ font: "600 15px/1.4 system-ui, sans-serif", margin: "0 0 10px", textTransform: "capitalize", color: type === "inverted" ? "#fff" : undefined }}>
@@ -115,7 +115,7 @@ LinkAllStates.parameters = { layout: "fullscreen" };
 // ---------------------------------------------------------------------------
 function SocialPlaygroundRender({ brand, hierarchy, label, iconOnly, disabled }) {
   return (
-    <div style={{ padding: "40px", background: "#fafafa", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+    <div style={{ padding: "40px", background: "var(--color-background-surface-secondary)", display: "flex", gap: "16px", flexWrap: "wrap" }}>
       <SocialButton brand={brand} hierarchy={hierarchy} disabled={disabled} onClick={action("social-click")}>
         {iconOnly ? null : label ?? undefined}
       </SocialButton>
@@ -147,7 +147,7 @@ export const SocialPlayground = {
 
 export function SocialAllStates() {
   return (
-    <div style={{ padding: "32px 40px", maxWidth: "1100px", background: "#fafafa", minHeight: "100vh" }}>
+    <div style={{ padding: "32px 40px", maxWidth: "1100px", background: "var(--color-background-surface-secondary)", minHeight: "100vh" }}>
       <h1 style={{ font: "700 28px/1.3 system-ui, sans-serif", marginBottom: "4px" }}>Social Buttons</h1>
       <p style={{ font: "400 14px/1.5 system-ui, sans-serif", opacity: 0.6, marginBottom: "24px" }}>
         Synced from the Figma “SOCIAL BUTTONS” page (Hierarchy × Brand × State).
