@@ -14,10 +14,11 @@ const TrashIcon = (
   </svg>
 );
 
-function PlaygroundRender({ hierarchy, size, label, fab, disabled, leftIcon, rightIcon }) {
+function PlaygroundRender({ type, hierarchy, size, label, fab, disabled, leftIcon, rightIcon }) {
   return (
-    <div style={{ padding: "40px", display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap" }}>
+    <div style={{ padding: "40px", display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap", background: "#fafafa" }}>
       <Button
+        type={type}
         hierarchy={hierarchy}
         size={size}
         fab={fab}
@@ -34,16 +35,18 @@ function PlaygroundRender({ hierarchy, size, label, fab, disabled, leftIcon, rig
 
 export const Playground = {
   args: {
+    type: "brand",
     hierarchy: "filled",
     size: "medium",
-    label: "Delete",
+    label: "Continue",
     fab: false,
     disabled: false,
     leftIcon: false,
     rightIcon: false,
   },
   argTypes: {
-    hierarchy: { control: "radio", options: ["filled", "tint", "outlined"] },
+    type: { control: "radio", options: ["brand", "neutral", "destructive"] },
+    hierarchy: { control: "select", options: ["filled", "tint", "outlined", "ghost"] },
     size: { control: "select", options: ["x-small", "small", "medium", "large", "x-large"] },
     label: { control: "text", if: { arg: "fab", truthy: false } },
     fab: { control: "boolean", description: "Icon-only square button" },
@@ -54,45 +57,40 @@ export const Playground = {
   render: PlaygroundRender,
 };
 
-function Row({ hierarchy }) {
+const HIERARCHIES = ["filled", "tint", "outlined", "ghost"];
+
+function TypeSection({ type }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: "420px" }}>
-      <div style={{ fontFamily: "system-ui, sans-serif", fontWeight: 600, fontSize: "13px", textTransform: "capitalize" }}>
-        {hierarchy}
-      </div>
-      {["default", "hover", "pressed"].map((state) => (
-        <div key={state} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <span style={{ width: "64px", fontFamily: "system-ui, sans-serif", fontSize: "11px", opacity: 0.6 }}>{state}</span>
-          <Button hierarchy={hierarchy} size="small" onClick={action(`${hierarchy}-${state}`)}>
-            Delete
-          </Button>
-          <Button hierarchy={hierarchy} size="small" leftIcon={<ChevronIcon />} rightIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />} onClick={action(`${hierarchy}-${state}`)}>
-            Delete
-          </Button>
-          <Button hierarchy={hierarchy} size="small" fab leftIcon={TrashIcon} aria-label="Delete" onClick={action(`${hierarchy}-${state}-fab`)} />
+    <section style={{ marginBottom: "48px" }}>
+      <h2 style={{ font: "600 18px/1.4 system-ui, sans-serif", margin: "0 0 12px", textTransform: "capitalize" }}>{type}</h2>
+      {HIERARCHIES.map((hierarchy) => (
+        <div key={hierarchy} style={{ display: "flex", gap: "24px", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap" }}>
+          <span style={{ width: "72px", fontFamily: "system-ui, sans-serif", fontSize: "11px", opacity: 0.6, paddingTop: "12px" }}>{hierarchy}</span>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+            <Button type={type} hierarchy={hierarchy} size="small" onClick={action(`${type}-${hierarchy}`)}>
+              Continue
+            </Button>
+            <Button type={type} hierarchy={hierarchy} size="small" leftIcon={<ChevronIcon />} onClick={action(`${type}-${hierarchy}`)}>
+              Continue
+            </Button>
+            <Button type={type} hierarchy={hierarchy} size="small" fab leftIcon={TrashIcon} aria-label="Action" onClick={action(`${type}-${hierarchy}-fab`)} />
+            <Button type={type} hierarchy={hierarchy} size="small" disabled onClick={action(`${type}-${hierarchy}-disabled`)}>
+              Continue
+            </Button>
+            <Button type={type} hierarchy={hierarchy} size="small" disabled fab leftIcon={TrashIcon} aria-label="Action" />
+          </div>
         </div>
       ))}
-      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-        <span style={{ width: "64px", fontFamily: "system-ui, sans-serif", fontSize: "11px", opacity: 0.6 }}>disabled</span>
-        <Button hierarchy={hierarchy} size="small" disabled onClick={action(`${hierarchy}-disabled`)}>
-          Delete
-        </Button>
-        <Button hierarchy={hierarchy} size="small" disabled leftIcon={<ChevronIcon />} onClick={action(`${hierarchy}-disabled`)}>
-          Delete
-        </Button>
-        <Button hierarchy={hierarchy} size="small" disabled fab leftIcon={TrashIcon} aria-label="Delete" />
-      </div>
-      {/* static state previews via inline props are approximated by the interactive states above */}
-    </div>
+    </section>
   );
 }
 
 export function AllStates() {
   return (
-    <div style={{ padding: "32px 40px", maxWidth: "1280px" }}>
-      <h1 style={{ font: "700 28px/1.3 system-ui, sans-serif", marginBottom: "4px" }}>Destructive Button</h1>
+    <div style={{ padding: "32px 40px", maxWidth: "1280px", background: "#fafafa", minHeight: "100vh" }}>
+      <h1 style={{ font: "700 28px/1.3 system-ui, sans-serif", marginBottom: "4px" }}>Button</h1>
       <p style={{ font: "400 14px/1.5 system-ui, sans-serif", opacity: 0.6, marginBottom: "24px" }}>
-        Synced from Figma “Destructive Button” component set — hover/press the buttons to see each state.
+        Synced from the Figma “Button” component set (Type × Hierarchy × State × Size × FAB). Hover/press to see states.
       </p>
 
       <div style={{ marginBottom: "32px" }}>
@@ -100,17 +98,15 @@ export function AllStates() {
         <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           {["x-small", "small", "medium", "large", "x-large"].map((s) => (
             <Button key={s} size={s} hierarchy="filled" onClick={action(`size-${s}`)}>
-              Delete
+              Continue
             </Button>
           ))}
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "48px", flexWrap: "wrap" }}>
-        <Row hierarchy="filled" />
-        <Row hierarchy="tint" />
-        <Row hierarchy="outlined" />
-      </div>
+      <TypeSection type="brand" />
+      <TypeSection type="neutral" />
+      <TypeSection type="destructive" />
     </div>
   );
 }
