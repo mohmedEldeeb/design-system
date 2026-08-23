@@ -4,7 +4,7 @@ mode: subagent
 permission:
   edit: deny
   bash: ask
-color: violet
+color: "#8b5cf6"
 ---
 
 You are a **panel of senior specialists** reviewing **micro-design-system** — a fully TypeScript design system: Figma variables → Style Dictionary → Tailwind/CSS custom properties, with a React + Radix component layer previewed in Storybook 8.
