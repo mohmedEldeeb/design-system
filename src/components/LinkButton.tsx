@@ -98,6 +98,17 @@ export function LinkButton({
   const [active, setActive] = useState(false);
   const [focused, setFocused] = useState(false);
 
+  const {
+    style: consumerStyle,
+    onMouseEnter: consumerEnter,
+    onMouseLeave: consumerLeave,
+    onMouseDown: consumerDown,
+    onMouseUp: consumerUp,
+    onFocus: consumerFocus,
+    onBlur: consumerBlur,
+    ...nativeRest
+  } = rest;
+
   const color = disabled
     ? t.disabled
     : hovered || active
@@ -118,23 +129,34 @@ export function LinkButton({
 
   return (
     <button
+      {...nativeRest}
       type="button"
       disabled={disabled}
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => {
+      onMouseEnter={(e) => {
+        consumerEnter?.(e);
+        setHovered(true);
+      }}
+      onMouseLeave={(e) => {
+        consumerLeave?.(e);
         setHovered(false);
         setActive(false);
       }}
-      onMouseDown={() => setActive(true)}
-      onMouseUp={() => setActive(false)}
+      onMouseDown={(e) => {
+        consumerDown?.(e);
+        setActive(true);
+      }}
+      onMouseUp={(e) => {
+        consumerUp?.(e);
+        setActive(false);
+      }}
       onFocus={(e) => {
+        consumerFocus?.(e);
         setFocused(true);
-        rest.onFocus?.(e);
       }}
       onBlur={(e) => {
+        consumerBlur?.(e);
         setFocused(false);
-        rest.onBlur?.(e);
       }}
       style={{
         ...fontStyle(s.font),
@@ -152,8 +174,8 @@ export function LinkButton({
         outline: "none",
         textDecoration: "none",
         color,
+        ...consumerStyle,
       }}
-      {...rest}
     >
       {!fab && iconStart && <span aria-hidden style={iconBox}>{iconStart}</span>}
       {fab ? (

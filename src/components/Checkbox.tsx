@@ -137,6 +137,8 @@ export interface CheckboxProps {
   onCheckedChange?: (checked: boolean | "indeterminate") => void;
 }
 
+type RadixRootProps = React.ComponentPropsWithoutRef<typeof RadixCheckbox.Root>;
+
 export function Checkbox({
   hierarchy = "filled",
   size = "medium",
@@ -146,7 +148,9 @@ export function Checkbox({
   disabled = false,
   forceState,
   onCheckedChange,
-}: CheckboxProps) {
+  ...rest
+}: CheckboxProps &
+  Omit<RadixRootProps, "checked" | "disabled" | "onCheckedChange">) {
   const s = SIZES[size];
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -202,19 +206,41 @@ export function Checkbox({
     outline: "none",
   };
 
+  const {
+    style: consumerStyle,
+    onMouseEnter: consumerEnter,
+    onMouseLeave: consumerLeave,
+    onFocus: consumerFocus,
+    onBlur: consumerBlur,
+    ...nativeRest
+  } = rest;
+
   return (
     <RadixCheckbox.Root
+      {...nativeRest}
       checked={indeterminate ? "indeterminate" : isChecked}
       disabled={disabled}
       onCheckedChange={(next) => {
         if (!isControlled) setInternalChecked(next === true);
         onCheckedChange?.(next);
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={rootStyle}
+      onMouseEnter={(e) => {
+        consumerEnter?.(e);
+        setHovered(true);
+      }}
+      onMouseLeave={(e) => {
+        consumerLeave?.(e);
+        setHovered(false);
+      }}
+      onFocus={(e) => {
+        consumerFocus?.(e);
+        setFocused(true);
+      }}
+      onBlur={(e) => {
+        consumerBlur?.(e);
+        setFocused(false);
+      }}
+      style={{ ...rootStyle, ...consumerStyle }}
     >
       <RadixCheckbox.Indicator
         style={{

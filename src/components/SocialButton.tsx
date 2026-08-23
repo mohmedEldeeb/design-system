@@ -36,6 +36,15 @@ export function SocialButton({
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
 
+  const {
+    style: consumerStyle,
+    onMouseEnter: consumerEnter,
+    onMouseLeave: consumerLeave,
+    onFocus: consumerFocus,
+    onBlur: consumerBlur,
+    ...nativeRest
+  } = rest;
+
   let background: string;
   let borderColor: string;
   let color: string;
@@ -75,18 +84,25 @@ export function SocialButton({
 
   return (
     <button
+      {...nativeRest}
       type="button"
       disabled={disabled}
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={(e) => {
+        consumerEnter?.(e);
+        setHovered(true);
+      }}
+      onMouseLeave={(e) => {
+        consumerLeave?.(e);
+        setHovered(false);
+      }}
       onFocus={(e) => {
+        consumerFocus?.(e);
         setFocused(true);
-        rest.onFocus?.(e);
       }}
       onBlur={(e) => {
+        consumerBlur?.(e);
         setFocused(false);
-        rest.onBlur?.(e);
       }}
       style={{
         ...fontStyle("label-medium-medium"),
@@ -108,8 +124,8 @@ export function SocialButton({
         background,
         border: `1px solid ${borderColor}`,
         color,
+        ...consumerStyle,
       }}
-      {...rest}
     >
       <span aria-hidden style={iconBox}>
         {icon}
