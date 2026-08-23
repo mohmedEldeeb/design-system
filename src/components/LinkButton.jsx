@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import tw from "../../dist/json/tailwind-tokens.json";
+import { fontStack } from "./typography";
 
 const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
 
@@ -53,7 +54,7 @@ const SIZES = {
 function font(styleName) {
   const [size, opts] = tw.fontSize[styleName];
   return {
-    fontFamily: tw.fontFamily.label?.[0] ?? "sans-serif",
+    fontFamily: fontStack(),
     fontSize: size,
     lineHeight: opts.lineHeight,
     letterSpacing: opts.letterSpacing,
@@ -66,6 +67,8 @@ export function LinkButton({
   size = "medium",
   fab = false,
   disabled = false,
+  startIcon,
+  endIcon,
   leftIcon,
   rightIcon,
   children,
@@ -74,6 +77,8 @@ export function LinkButton({
 }) {
   const s = SIZES[size] ?? SIZES.medium;
   const t = TYPES[type] ?? TYPES.primary;
+  const iconStart = startIcon ?? leftIcon;
+  const iconEnd = endIcon ?? rightIcon;
   const [hovered, setHovered] = useState(false);
   const [active, setActive] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -135,13 +140,13 @@ export function LinkButton({
       }}
       {...rest}
     >
-      {!fab && leftIcon && <span aria-hidden style={iconBox}>{leftIcon}</span>}
+      {!fab && iconStart && <span aria-hidden style={iconBox}>{iconStart}</span>}
       {fab ? (
-        <span aria-hidden style={iconBox}>{leftIcon ?? rightIcon ?? children}</span>
+        <span aria-hidden style={iconBox}>{iconStart ?? iconEnd ?? children}</span>
       ) : (
         children
       )}
-      {!fab && rightIcon && <span aria-hidden style={iconBox}>{rightIcon}</span>}
+      {!fab && iconEnd && <span aria-hidden style={iconBox}>{iconEnd}</span>}
     </button>
   );
 }

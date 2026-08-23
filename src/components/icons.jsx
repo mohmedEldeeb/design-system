@@ -34,7 +34,16 @@ export const socialBrandIcons = {
 };
 
 export const ChevronIcon = (props) => (
-  <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
+  <svg
+    width="1em"
+    height="1em"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    className="ds-flip-rtl"
+    {...props}
+  >
     <path d="M6 3.5L10.5 8L6 12.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );

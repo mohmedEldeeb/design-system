@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import tw from "../../dist/json/tailwind-tokens.json";
 import { socialBrandIcons } from "./icons";
+import { fontStack } from "./typography";
 
 const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
 
@@ -18,7 +19,7 @@ const BRANDS = {
 function font() {
   const [size, opts] = tw.fontSize["label-medium-medium"];
   return {
-    fontFamily: tw.fontFamily.label?.[0] ?? "sans-serif",
+    fontFamily: fontStack(),
     fontSize: size,
     lineHeight: opts.lineHeight,
     letterSpacing: opts.letterSpacing,

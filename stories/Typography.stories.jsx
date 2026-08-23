@@ -1,5 +1,6 @@
 import React from "react";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
+import { fontStack } from "../src/components/typography";
 
 const CATEGORY_ORDER = ["display", "heading", "subheading", "label", "paragraph", "code"];
 
@@ -49,25 +50,41 @@ function SpecimenRow({ family, tokenName, size, opts }) {
           {size} / {opts.lineHeight} · {opts.fontWeight} · {opts.letterSpacing}
         </div>
       </div>
-      <div
-        style={{
-          fontFamily: family,
-          fontSize: size,
-          lineHeight: opts.lineHeight,
-          letterSpacing: opts.letterSpacing,
-          fontWeight: opts.fontWeight,
-          color: "#050505",
-          minWidth: 0,
-        }}
-      >
-        The quick brown fox jumps over the lazy dog 0123456789
+      <div style={{ minWidth: 0 }}>
+        <div
+          dir="ltr"
+          style={{
+            fontFamily: family,
+            fontSize: size,
+            lineHeight: opts.lineHeight,
+            letterSpacing: opts.letterSpacing,
+            fontWeight: opts.fontWeight,
+            color: "#050505",
+          }}
+        >
+          The quick brown fox jumps over the lazy dog 0123456789
+        </div>
+        <div
+          dir="rtl"
+          lang="ar"
+          style={{
+            fontFamily: family,
+            fontSize: size,
+            lineHeight: opts.lineHeight,
+            fontWeight: opts.fontWeight,
+            color: "#050505",
+            marginTop: "4px",
+          }}
+        >
+          النص العربي واضح ومقروء بجميع الأحجام ٠١٢٣٤٥٦٧٨٩
+        </div>
       </div>
     </div>
   );
 }
 
 function TypographyPage() {
-  const family = tailwindTokens.fontFamily?.label?.[0] ?? tailwindTokens.fontFamily?.code?.[0] ?? "sans-serif";
+  const family = fontStack(tailwindTokens.fontFamily?.label ? "label" : "code");
   const groups = groupByCategory(tailwindTokens.fontSize);
   const ordered = CATEGORY_ORDER.filter((c) => groups[c]);
   const total = Object.values(groups).reduce((n, g) => n + g.length, 0);

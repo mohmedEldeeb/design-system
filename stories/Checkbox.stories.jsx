@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Checkbox } from "../src/components/Checkbox";
+import { fontStyle } from "../src/components/typography";
 
 const HIERARCHIES = ["filled", "tint", "outline"];
 const SIZES = ["small", "medium", "large"];
@@ -42,8 +43,7 @@ function PlaygroundRender({
         />
         <span
           style={{
-            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-            fontSize: "14px",
+            ...fontStyle("label-medium-medium"),
             color: "var(--color-text-neutral-secondary)",
             userSelect: "none",
           }}
@@ -187,8 +187,7 @@ export const WithLabels = {
       display: "flex",
       gap: "8px",
       alignItems: "center",
-      fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-      fontSize: "14px",
+      ...fontStyle("label-medium-medium"),
       color: "var(--color-text-neutral-secondary)",
       userSelect: "none",
     };
@@ -218,7 +217,7 @@ export const WithLabels = {
             display: "flex",
             flexDirection: "column",
             gap: "12px",
-            paddingLeft: "8px",
+            paddingInlineStart: "8px",
           }}
         >
           <label style={{ ...row, fontWeight: 500 }}>
@@ -233,7 +232,7 @@ export const WithLabels = {
             />
             Select all
           </label>
-          <label style={{ ...row, paddingLeft: "20px" }}>
+          <label style={{ ...row, paddingInlineStart: "20px" }}>
             <Checkbox
               hierarchy="tint"
               size="small"
@@ -242,7 +241,7 @@ export const WithLabels = {
             />
             Email notifications
           </label>
-          <label style={{ ...row, paddingLeft: "20px" }}>
+          <label style={{ ...row, paddingInlineStart: "20px" }}>
             <Checkbox
               hierarchy="tint"
               size="small"

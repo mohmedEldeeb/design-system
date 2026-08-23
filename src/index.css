@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[dir="rtl"] .ds-flip-rtl {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] * {
+  letter-spacing: normal !important;
+}

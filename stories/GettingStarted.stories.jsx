@@ -209,7 +209,7 @@ document.documentElement.removeAttribute("data-theme");`}</Code>
       {/* ---------------------------------------------------------------- */}
       <section style={sectionStyle}>
         <h2 style={h2Style}>Where to look next</h2>
-        <ul style={{ ...pStyle, paddingLeft: "20px" }}>
+        <ul style={{ ...pStyle, paddingInlineStart: "20px" }}>
           <li>
             <strong>Foundations → Typography / Colors</strong> — every generated
             token, live
