@@ -11,9 +11,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const RAW_DIR = path.resolve(import.meta.dirname, "..", "tokens", "figma-raw");
-const OUT_FILE = path.resolve(import.meta.dirname, "..", "tokens", "tokens.json");
-const DARK_FILE = path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
+const RAW_DIR = process.env.TOKENS_RAW_DIR
+  ?? path.resolve(import.meta.dirname, "..", "tokens", "figma-raw");
+const OUT_FILE = process.env.TOKENS_OUT_FILE
+  ?? path.resolve(import.meta.dirname, "..", "tokens", "tokens.json");
+const DARK_FILE = process.env.TOKENS_DARK_FILE
+  ?? path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
 
 // ---------------------------------------------------------------------------
 // 1. Merge all raw dumps into one flat map (name -> resolved value string)

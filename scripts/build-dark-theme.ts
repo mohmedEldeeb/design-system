@@ -20,8 +20,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const SRC = path.resolve(import.meta.dirname, "..", "dist", "json", "tokens.json");
-const OUT = path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
+const SRC = process.env.TOKENS_FLAT_FILE
+  ?? path.resolve(import.meta.dirname, "..", "dist", "json", "tokens.json");
+const OUT = process.env.TOKENS_DARK_OUT
+  ?? path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
 
 function hexToHsl(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255;

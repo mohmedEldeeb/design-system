@@ -4,13 +4,17 @@
   "private": false,
   "description": "Design tokens pipeline: Figma variables -> Style Dictionary -> CSS custom properties + Tailwind theme, previewed in Storybook. Radix UI primitives are installed and ready for the component layer.",
   "scripts": {
-    "tokens:from-figma": "tsx scripts/build-source-tokens.ts",
-    "tokens:build": "tsx style-dictionary.config.ts",
+    "tokens:from-figma": "tsx --env-file-if-exists=.env scripts/build-source-tokens.ts",
+    "tokens:build": "tsx --env-file-if-exists=.env style-dictionary.config.ts",
     "tokens:sync": "npm run tokens:from-figma && npm run tokens:build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "tokens:dark": "tsx scripts/build-dark-theme.ts",
-    "typecheck": "tsc --noEmit"
+    "tokens:dark": "tsx --env-file-if-exists=.env scripts/build-dark-theme.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:stories": "concurrently -k -s first -n \"SB,TEST\" \"npm run serve:storybook\" \"wait-on tcp:127.0.0.1:${STORYBOOK_PORT:-6007} && test-storybook --url http://127.0.0.1:${STORYBOOK_PORT:-6007}\"",
+    "serve:storybook": "http-server storybook-static --silent --port ${STORYBOOK_PORT:-6007} -c-1"
   },
   "dependencies": {
     "radix-ui": "^1.4.2"
@@ -20,11 +24,20 @@
     "@storybook/addon-themes": "^8.6.18",
     "@storybook/react": "^8.6.14",
     "@storybook/react-vite": "^8.6.14",
+    "@storybook/test-runner": "^0.18.2",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^10.0.5",
+    "http-server": "^14.1.1",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
     "postcss": "^8.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -33,6 +46,8 @@
     "tailwindcss": "^3.4.17",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vitest": "^4.1.11",
+    "wait-on": "^9.1.0"
   }
 }

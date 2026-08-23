@@ -3,3 +3,4 @@ storybook-static/
 dist/
 *.log
 .npmrc
+.env

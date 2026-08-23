@@ -16,10 +16,26 @@ npm run typecheck            # tsc --noEmit (TypeScript gate — must pass befor
 
 The project is fully TypeScript (`strict`). Source lives in `src/**/*.tsx`,
 `scripts/*.ts`, and TS config files; scripts run via the `tsx` runner. CI
-(`.github/workflows/ci.yml`) runs tokens:sync → typecheck → a no-`.jsx`
-guard → build-storybook on every PR.
+(`.github/workflows/ci.yml`) runs tokens:sync → typecheck → unit tests → a
+no-`.jsx` guard → build-storybook on every PR.
 
-There are no test commands — this project has no test suite yet.
+Test commands: `npm test` (Vitest unit tests), `npm run test:stories`
+(Storybook smoke tests via test-runner — needs `npm run build-storybook` first).
+
+## Environment variables
+
+All optional — scripts fall back to project defaults when unset. See
+`.env.example`; copy it to `.env` (gitignored) to override locally. Loaded
+via `--env-file-if-exists=.env` in the token pipeline scripts:
+
+| Variable | Default | Used by |
+|---|---|---|
+| `TOKENS_RAW_DIR` | `./tokens/figma-raw` | build-source-tokens.ts |
+| `TOKENS_OUT_FILE` | `./tokens/tokens.json` | build-source-tokens.ts |
+| `TOKENS_DARK_FILE` | `./tokens/dark-theme.json` | build-source-tokens.ts |
+| `TOKENS_FLAT_FILE` | `./dist/json/tokens.json` | build-dark-theme.ts |
+| `TOKENS_DARK_OUT` | `./tokens/dark-theme.json` | build-dark-theme.ts |
+| `STORYBOOK_PORT` | `6007` | serve:storybook / test:stories |
 
 ## Architecture
 
