@@ -15,9 +15,7 @@ npm run typecheck            # tsc --noEmit (TypeScript gate — must pass befor
 ```
 
 The project is fully TypeScript (`strict`). Source lives in `src/**/*.tsx`,
-`scripts/*.ts`, and TS config files; scripts run via the `tsx` runner. CI
-(`.github/workflows/ci.yml`) runs tokens:sync → typecheck → unit tests → a
-no-`.jsx` guard → build-storybook on every PR.
+`scripts/*.ts`, and TS config files; scripts run via the `tsx` runner.
 
 Test commands: `npm test` (Vitest unit tests), `npm run test:stories`
 (Storybook smoke tests via test-runner — needs `npm run build-storybook` first).

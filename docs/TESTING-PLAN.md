@@ -46,7 +46,6 @@ scripts/__tests__/
 - [ ] `vitest.config.ts`: `environment: "jsdom"`, `setupFiles: ["src/test/setup.ts"]`, `globals: true`
 - [ ] `npm test` script (`vitest run`), `npm run test:watch`, `test:stories` (`test-storybook`)
 - [ ] One trivial sanity test passing (e.g. typography `fontStack()` returns fallbacks)
-- [ ] CI: add `npm test` step after typecheck in `.github/workflows/ci.yml`
 
 ## Phase 1 — Checkbox tests (highest value, 1 PR)
 
