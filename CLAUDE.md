@@ -11,7 +11,13 @@ npm run tokens:build         # tokens/tokens.json → dist/css/ + dist/json/
 npm run tokens:sync          # both steps above in sequence (use after any Figma update)
 npm run storybook            # dev server at http://localhost:6006
 npm run build-storybook      # static Storybook build
+npm run typecheck            # tsc --noEmit (TypeScript gate — must pass before merging)
 ```
+
+The project is fully TypeScript (`strict`). Source lives in `src/**/*.tsx`,
+`scripts/*.ts`, and TS config files; scripts run via the `tsx` runner. CI
+(`.github/workflows/ci.yml`) runs tokens:sync → typecheck → a no-`.jsx`
+guard → build-storybook on every PR.
 
 There are no test commands — this project has no test suite yet.
 
@@ -22,24 +28,24 @@ This is a **tokens-only** design system foundation. The pipeline is strictly one
 ```
 Figma (Variables)
   → tokens/figma-raw/*.json     (point-in-time snapshot via Figma MCP get_variable_defs)
-  → tokens/tokens.json          (Style Dictionary source, built by scripts/build-source-tokens.js)
+  → tokens/tokens.json          (Style Dictionary source, built by scripts/build-source-tokens.ts)
   → dist/css/variables.css      (CSS custom properties: --color-*, --spacing-*, ...)
-  → dist/json/tailwind-tokens.json  (Tailwind theme object, consumed by tailwind.config.js)
+  → dist/json/tailwind-tokens.json  (Tailwind theme object, consumed by tailwind.config.ts)
   → dist/json/tokens.json       (flat "dot.path": value map for any JS consumer)
 ```
 
-**`scripts/build-source-tokens.js`** — Reads all `.json` files from `tokens/figma-raw/` and categorizes them into six top-level Style Dictionary categories: `color`, `spacing`, `sizing`, `radius`, `borderWidth`, `typography`, `shadow`. Any new `.json` file dropped into `tokens/figma-raw/` is automatically picked up. The script handles Figma's composite serialization strings (`Font(...)`, `Effect(...)`) by skipping them in the generic pass and processing them explicitly in dedicated sections.
+**`scripts/build-source-tokens.ts`** — Reads all `.json` files from `tokens/figma-raw/` and categorizes them into six top-level Style Dictionary categories: `color`, `spacing`, `sizing`, `radius`, `borderWidth`, `typography`, `shadow`. Any new `.json` file dropped into `tokens/figma-raw/` is automatically picked up. The script handles Figma's composite serialization strings (`Font(...)`, `Effect(...)`) by skipping them in the generic pass and processing them explicitly in dedicated sections.
 
-**`style-dictionary.config.js`** — Three custom formats registered directly (no config file):
+**`style-dictionary.config.ts`** — Three custom formats registered directly (no config file):
 - `custom/css-variables` → `dist/css/variables.css` (skips `typography` composites since CSS custom properties can't hold font shorthands)
 - `custom/tailwind-theme` → `dist/json/tailwind-tokens.json` (maps token categories to Tailwind's theme keys)
 - `custom/flat-tokens` → `dist/json/tokens.json`
 
-**`tailwind.config.js`** — Requires `dist/json/tailwind-tokens.json` at build time and extends all theme keys directly. Tailwind class names mirror Figma's naming verbatim (e.g. `bg-background-brand-vibrant-default`).
+**`tailwind.config.ts`** — Requires `dist/json/tailwind-tokens.json` at build time and extends all theme keys directly. Tailwind class names mirror Figma's naming verbatim (e.g. `bg-background-brand-vibrant-default`).
 
 **`stories/DesignTokens.stories.jsx`** — Single Storybook story ("Foundations / Design Tokens") that renders all generated tokens from `dist/json/tailwind-tokens.json`. This is the primary visual QA tool after a Figma sync.
 
-**`.storybook/preview.js`** — Imports `dist/css/variables.css` (the CSS custom properties) and `src/index.css` (Tailwind's base/components/utilities) so all stories have full token access.
+**`.storybook/preview.ts`** — Imports `dist/css/variables.css` (the CSS custom properties) and `src/index.css` (Tailwind's base/components/utilities) so all stories have full token access.
 
 ## Token categories and Figma mapping
 
@@ -74,12 +80,12 @@ The token layer is direction-agnostic (spacing uses gap / padding-horizontal / p
 Rules for components and stories:
 - Never use physical properties (`marginLeft`, `paddingLeft`, Tailwind `ml-*`/`mr-*`/`pl-*`/`pr-*`, `left-*`/`right-*`). Use logical equivalents: CSS `marginInlineStart`/`paddingInlineStart`, Tailwind `ms-*`/`me-*`/`ps-*`/`pe-*` (built into Tailwind 3.4), and `start-*`/`end-*` for insets.
 - For transforms, text-align, or flex/grid ordering that logical properties can't express, use the `rtl:`/`ltr:` Tailwind variants.
-- Storybook has a "Direction" toolbar global (`.storybook/preview.js`) that wraps every story in `<dir>`; verify new stories in both LTR and RTL.
+- Storybook has a "Direction" toolbar global (`.storybook/preview.ts`) that wraps every story in `<dir>`; verify new stories in both LTR and RTL.
 - Radix primitives that accept a `dir` prop (Select, Tabs, Slider, …) must receive it from a shared locale/direction context when built — never hardcode `"ltr"`.
 - Icons with inherent direction (e.g. chevron-left/right) should be authored as back/forward semantics or mirrored under RTL via `[dir="rtl"] &_transform { transform: scaleX(-1); }` patterns. Watch for this once icon tokens are pulled from Figma.
 
 ### Typography under RTL
-- Always set font families through `src/components/typography.js` (`fontStack()` / `fontStyle()`) — it appends Arabic-capable fallbacks (Arial/Tahoma/Segoe UI) since Plus Jakarta Sans has no Arabic glyphs. Never use a bare `tw.fontFamily.*[0]`.
+- Always set font families through `src/components/typography.ts` (`fontStack()` / `fontStyle()`) — it appends Arabic-capable fallbacks (Arial/Tahoma/Segoe UI) since Plus Jakarta Sans has no Arabic glyphs. Never use a bare `tw.fontFamily.*[0]`.
 - Figma's negative letter-spacing must not apply to Arabic script; `src/index.css` zeroes `letter-spacing` under `[dir="rtl"]`. Do not re-add physical tracking in RTL contexts.
 - Text alignment: never `textAlign: "left"/"right"` — rely on the default start-alignment (follows `dir`), or explicit `"start"`/`"end"`.
 - The Typography story renders every style with both a Latin and an Arabic specimen; keep both when adding styles.

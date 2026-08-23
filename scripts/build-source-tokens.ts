@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-source-tokens.js
+ * build-source-tokens.ts
  *
  * Merges the raw Figma variable dumps in tokens/figma-raw/*.json (as pulled
  * via the Figma MCP `get_variable_defs` tool) into a single, categorized
@@ -8,53 +8,64 @@
  *
  * Re-run this whenever tokens/figma-raw/*.json is refreshed from Figma.
  */
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import path from "node:path";
 
-const RAW_DIR = path.join(__dirname, "..", "tokens", "figma-raw");
-const OUT_FILE = path.join(__dirname, "..", "tokens", "tokens.json");
+const RAW_DIR = path.resolve(import.meta.dirname, "..", "tokens", "figma-raw");
+const OUT_FILE = path.resolve(import.meta.dirname, "..", "tokens", "tokens.json");
+const DARK_FILE = path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
 
 // ---------------------------------------------------------------------------
 // 1. Merge all raw dumps into one flat map (name -> resolved value string)
 // ---------------------------------------------------------------------------
-const flat = {};
+const flat: Record<string, unknown> = {};
 for (const file of fs.readdirSync(RAW_DIR)) {
   if (!file.endsWith(".json")) continue;
-  const data = JSON.parse(fs.readFileSync(path.join(RAW_DIR, file), "utf8"));
-  Object.assign(flat, data);
+  const data: unknown = JSON.parse(fs.readFileSync(path.join(RAW_DIR, file), "utf8"));
+  if (typeof data === "object" && data !== null) Object.assign(flat, data);
 }
 
 // Composite Figma debug strings like "Font(family: ...)" / "Effect(...)" are
 // handled separately below (they are Figma's own serialization, not usable
 // as literal Style Dictionary values), so we skip them during the generic
 // color/number pass.
-const isComposite = (key, value) =>
+const isComposite = (key: string, value: unknown): boolean =>
   typeof value === "string" &&
   (value.startsWith("Font(") || value.startsWith("Effect("));
 
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
-function setToken(root, pathParts, value, type, extra = {}) {
-  let node = root;
+type TokenTree = Record<string, unknown>;
+
+function setToken(
+  root: TokenTree,
+  pathParts: readonly string[],
+  value: unknown,
+  type: string,
+  extra: Record<string, unknown> = {}
+): void {
+  let node: TokenTree = root;
   for (let i = 0; i < pathParts.length - 1; i++) {
-    const seg = pathParts[i];
-    node[seg] = node[seg] || {};
-    node = node[seg];
+    const seg = pathParts[i] ?? "";
+    const existing = node[seg];
+    node[seg] =
+      typeof existing === "object" && existing !== null ? existing : {};
+    node = node[seg] as TokenTree;
   }
-  const last = pathParts[pathParts.length - 1];
+  const last = pathParts[pathParts.length - 1] ?? "";
   node[last] = { value, type, ...extra };
 }
 
 // Figma serializes numbers as float32, so values like letter-spacing come
 // back as "0.10000000149011612". Round to a sane precision for output.
-function roundNum(value) {
+function roundNum(value: unknown): string {
   const n = Number(value);
-  if (Number.isNaN(n)) return value;
+  if (Number.isNaN(n)) return String(value);
   return String(Math.round(n * 10000) / 10000);
 }
 
-function slug(seg) {
+function slug(seg: string): string {
   return seg
     .replace(/\s+/g, "-")
     .replace(/[^a-zA-Z0-9-]/g, "")
@@ -62,23 +73,36 @@ function slug(seg) {
 }
 
 // Extracts the px number out of a Figma name like "gap/1_5rem (24px)"
-function pxFromLabel(name) {
+function pxFromLabel(name: string): string | null {
   const m = name.match(/\((-?\d+(?:\.\d+)?)px\)/);
-  return m ? m[1] : null;
+  return m?.[1] ?? null;
 }
 
-const tokens = { color: {}, spacing: {}, sizing: {}, radius: {}, borderWidth: {}, typography: {}, shadow: {} };
+const tokens = {
+  color: {} as TokenTree,
+  spacing: {} as TokenTree,
+  sizing: {} as TokenTree,
+  radius: {} as TokenTree,
+  borderWidth: {} as TokenTree,
+  typography: {} as TokenTree,
+  shadow: {} as TokenTree,
+};
 
 // ---------------------------------------------------------------------------
 // 2. Color tokens: icon/*, bd/*, text/*, bg/*
 // ---------------------------------------------------------------------------
-const colorPrefixes = { icon: "icon", bd: "border", text: "text", bg: "background" };
+const colorPrefixes: Record<string, string> = {
+  icon: "icon",
+  bd: "border",
+  text: "text",
+  bg: "background",
+};
 for (const [name, value] of Object.entries(flat)) {
   if (isComposite(name, value)) continue;
   const [prefix, ...rest] = name.split("/");
-  if (!colorPrefixes[prefix] || rest.length === 0) continue;
+  const bucket = prefix !== undefined ? colorPrefixes[prefix] : undefined;
+  if (!bucket || rest.length === 0) continue;
   if (typeof value !== "string" || !value.startsWith("#")) continue;
-  const bucket = colorPrefixes[prefix];
   const segs = rest.map(slug);
   setToken(tokens.color, [bucket, ...segs], value, "color", {
     extensions: { figmaName: name },
@@ -117,7 +141,9 @@ for (const [name, value] of Object.entries(flat)) {
 for (const [name, value] of Object.entries(flat)) {
   const m = name.match(/^(components|surface)\/([a-zA-Z0-9-]+)$/);
   if (!m) continue;
-  const [, group, step] = m;
+  const group = m[1];
+  const step = m[2];
+  if (!group || !step) continue;
   setToken(tokens.radius, [group, slug(step)], `${roundNum(value)}px`, "dimension", {
     extensions: { figmaName: name },
   });
@@ -126,17 +152,22 @@ for (const [name, value] of Object.entries(flat)) {
 // ---------------------------------------------------------------------------
 // 6. Border width tokens
 // ---------------------------------------------------------------------------
-if (flat["button/border/width/medium"] !== undefined) {
-  setToken(tokens.borderWidth, ["button", "medium"], `${roundNum(flat["button/border/width/medium"])}px`, "dimension", {
-    extensions: { figmaName: "button/border/width/medium" },
-  });
+const buttonBorderWidth = flat["button/border/width/medium"];
+if (buttonBorderWidth !== undefined) {
+  setToken(
+    tokens.borderWidth,
+    ["button", "medium"],
+    `${roundNum(buttonBorderWidth)}px`,
+    "dimension",
+    { extensions: { figmaName: "button/border/width/medium" } }
+  );
 }
-// Generic rem-scale value Figma labels under "border/*" — kept as a raw
-// dimension for now; rename once you confirm its intended use in Figma.
 for (const [name, value] of Object.entries(flat)) {
   const m = name.match(/^border\/([a-zA-Z0-9_.]+rem)\s*\(([-\d.]+)px\)$/);
   if (!m) continue;
-  setToken(tokens.borderWidth, ["scale", `${m[2]}px`], `${value}rem`, "dimension", {
+  const px = m[2];
+  if (!px) continue;
+  setToken(tokens.borderWidth, ["scale", `${px}px`], `${String(value)}rem`, "dimension", {
     extensions: { figmaName: name },
   });
 }
@@ -144,7 +175,7 @@ for (const [name, value] of Object.entries(flat)) {
 // ---------------------------------------------------------------------------
 // 7. Typography atoms
 // ---------------------------------------------------------------------------
-function getNum(name) {
+function getNum(name: string): unknown | null {
   return flat[name] !== undefined ? flat[name] : null;
 }
 
@@ -154,32 +185,31 @@ for (const style of typeStyles) {
   if (family !== null) setToken(tokens.typography, ["fontFamily", style], family, "fontFamily");
 }
 for (const [name, value] of Object.entries(flat)) {
-  let m;
+  let m: RegExpMatchArray | null;
   if ((m = name.match(/^type\/size\/([a-z]+)\/([a-z-]+)$/))) {
-    setToken(tokens.typography, ["fontSize", m[1], slug(m[2])], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
+    setToken(tokens.typography, ["fontSize", m[1] ?? "", slug(m[2] ?? "")], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
   } else if ((m = name.match(/^type\/weight\/([a-z]+)\/([a-z-]+)$/))) {
-    setToken(tokens.typography, ["fontWeight", m[1], slug(m[2])], Number(value), "fontWeight", { extensions: { figmaName: name } });
+    setToken(tokens.typography, ["fontWeight", m[1] ?? "", slug(m[2] ?? "")], Number(value), "fontWeight", { extensions: { figmaName: name } });
   } else if ((m = name.match(/^type\/line-height\/([a-z]+)\/([a-z-]+)$/))) {
-    setToken(tokens.typography, ["lineHeight", m[1], slug(m[2])], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
+    setToken(tokens.typography, ["lineHeight", m[1] ?? "", slug(m[2] ?? "")], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
   } else if ((m = name.match(/^type\/paragraph-spacing\/([a-z]+)\/([a-z-]+)$/))) {
-    setToken(tokens.typography, ["paragraphSpacing", m[1], slug(m[2])], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
+    setToken(tokens.typography, ["paragraphSpacing", m[1] ?? "", slug(m[2] ?? "")], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
   } else if ((m = name.match(/^letter-spacing\/(\d+)$/))) {
-    setToken(tokens.typography, ["letterSpacing", m[1]], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
+    setToken(tokens.typography, ["letterSpacing", m[1] ?? ""], `${roundNum(value)}px`, "dimension", { extensions: { figmaName: name } });
   }
 }
-if (flat["font/paragraphIndent/none"] !== undefined) {
-  setToken(tokens.typography, ["paragraphIndent", "none"], `${roundNum(flat["font/paragraphIndent/none"])}px`, "dimension");
+const paragraphIndent = flat["font/paragraphIndent/none"];
+if (paragraphIndent !== undefined) {
+  setToken(tokens.typography, ["paragraphIndent", "none"], `${roundNum(paragraphIndent)}px`, "dimension");
 }
 
-// Composite text styles, referencing the atoms above via Style Dictionary
-// reference syntax so a change to an atom propagates automatically.
 // Composite text styles, referencing the atoms above via Style Dictionary
 // reference syntax so a change to an atom propagates automatically.
 //
 // Generated from the Figma "TYPOGRAPHY SYSTEM OVERVIEW" frame (node
 // 9640-130857). Tuple layout:
 //   [family, sizeStep, WeightLabel, famKey, sizeKey, weightKey, letterKey]
-const textStyleDefs = [
+const textStyleDefs: ReadonlyArray<readonly string[]> = [
   ["display","large","Regular","display","large","regular","96"],
   ["display","large","Medium","display","large","medium","96"],
   ["display","large","Bold","display","large","bold","96"],
@@ -244,13 +274,13 @@ const textStyleDefs = [
 tokens.typography.textStyle = {};
 for (const [family, sizeStep, weightLabel, famKey, sizeKey, weightKey, letterKey] of textStyleDefs) {
   const name = `${family}-${sizeStep}-${weightLabel}`.toLowerCase();
-  tokens.typography.textStyle[name] = {
+  (tokens.typography.textStyle as TokenTree)[name] = {
     type: "typography",
     value: {
       fontFamily: `{typography.fontFamily.${famKey}.value}`,
       fontWeight: `{typography.fontWeight.${famKey}.${weightKey}.value}`,
-      fontSize: `{typography.fontSize.${famKey}.${slug(sizeKey)}.value}`,
-      lineHeight: `{typography.lineHeight.${famKey}.${slug(sizeKey)}.value}`,
+      fontSize: `{typography.fontSize.${famKey}.${slug(sizeKey ?? "")}.value}`,
+      lineHeight: `{typography.lineHeight.${famKey}.${slug(sizeKey ?? "")}.value}`,
       letterSpacing: `{typography.letterSpacing.${letterKey}.value}`,
     },
   };
@@ -259,13 +289,13 @@ for (const [family, sizeStep, weightLabel, famKey, sizeKey, weightKey, letterKey
 // ---------------------------------------------------------------------------
 // 8. Shadow tokens (elevation/shadow/<step>/layer-<n>/*) -> composite shadow
 // ---------------------------------------------------------------------------
-const shadowSteps = new Set();
+const shadowSteps = new Set<string>();
 for (const name of Object.keys(flat)) {
   const m = name.match(/^elevation\/shadow\/([a-z0-9]+)\/layer-(\d+)\//);
-  if (m) shadowSteps.add(m[1]);
+  if (m?.[1]) shadowSteps.add(m[1]);
 }
 for (const step of shadowSteps) {
-  const layers = [];
+  const layers: number[] = [];
   for (let layer = 0; ; layer++) {
     const prefix = `elevation/shadow/${step}/layer-${layer}/`;
     if (flat[`${prefix}color`] === undefined) break;
@@ -276,7 +306,8 @@ for (const step of shadowSteps) {
     setToken(tokens.shadow, [step, `layer${layer}`, "spread"], `${roundNum(flat[`${prefix}spread`])}px`, "dimension");
     layers.push(layer);
   }
-  tokens.shadow[step].composite = {
+  const stepNode = tokens.shadow[step] as TokenTree;
+  stepNode.composite = {
     type: "boxShadow",
     value: layers.map((layer) => ({
       color: `{shadow.${step}.layer${layer}.color.value}`,
@@ -296,20 +327,27 @@ for (const step of shadowSteps) {
 //
 // Values attach to the matching color token as `darkValue`. See
 // docs/DARK-MODE-SPEC.md. Placeholder values come from
-// scripts/build-dark-theme.js; replace with real Figma dark-mode values.
+// scripts/build-dark-theme.ts; replace with real Figma dark-mode values.
 // ---------------------------------------------------------------------------
-const DARK_FILE = path.join(__dirname, "..", "tokens", "dark-theme.json");
 if (fs.existsSync(DARK_FILE)) {
-  const dark = JSON.parse(fs.readFileSync(DARK_FILE, "utf8"));
+  const dark: unknown = JSON.parse(fs.readFileSync(DARK_FILE, "utf8"));
   let matched = 0;
-  const applyDark = (node, parts) => {
+  const applyDark = (node: unknown, parts: readonly string[]): void => {
+    if (typeof node !== "object" || node === null) return;
     for (const [key, child] of Object.entries(node)) {
       if (!child || typeof child !== "object") continue;
-      if ("value" in child) {
+      const record = child as Record<string, unknown>;
+      if ("value" in record) {
         const dotPath = ["color", ...parts, key].join(".");
-        if (child.type === "color" && typeof dark[dotPath] === "string") {
-          child.darkValue = dark[dotPath];
-          matched++;
+        if (record.type === "color") {
+          const darkValue =
+            typeof dark === "object" && dark !== null
+              ? (dark as Record<string, unknown>)[dotPath]
+              : undefined;
+          if (typeof darkValue === "string") {
+            record.darkValue = darkValue;
+            matched++;
+          }
         }
       } else {
         applyDark(child, [...parts, key]);

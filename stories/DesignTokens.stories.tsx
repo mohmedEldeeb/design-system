@@ -1,11 +1,20 @@
 import React from "react";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
+import { fontStack } from "../src/components/typography";
 
 // ---------------------------------------------------------------------------
 // Helpers to walk the generated theme object
 // ---------------------------------------------------------------------------
-function flattenColors(obj, prefix = []) {
-  const out = [];
+interface FlatToken {
+  name: string;
+  value: string;
+}
+
+const theme = tailwindTokens as unknown as Record<string, Record<string, unknown>>;
+
+function flattenColors(obj: unknown, prefix: string[] = []): FlatToken[] {
+  const out: FlatToken[] = [];
+  if (typeof obj !== "object" || obj === null) return out;
   for (const [key, value] of Object.entries(obj)) {
     const path = [...prefix, key];
     if (typeof value === "string") {
@@ -21,10 +30,10 @@ const sectionStyle = { marginBottom: "40px" };
 const headingStyle = { font: "600 18px/1.4 system-ui, sans-serif", marginBottom: "12px" };
 const subheadingStyle = { font: "600 13px/1.4 system-ui, sans-serif", margin: "20px 0 8px", opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.04em" };
 
-function ColorGrid({ colors }) {
-  const groups = {};
+function ColorGrid({ colors }: { colors: FlatToken[] }) {
+  const groups: Record<string, FlatToken[]> = {};
   for (const c of colors) {
-    const top = c.name.split(".")[0];
+    const top = c.name.split(".")[0] ?? "";
     groups[top] = groups[top] || [];
     groups[top].push(c);
   }
@@ -50,7 +59,7 @@ function ColorGrid({ colors }) {
   );
 }
 
-function SpacingScale({ spacing }) {
+function SpacingScale({ spacing }: { spacing: Record<string, string> }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
       {Object.entries(spacing).map(([name, value]) => (
@@ -64,8 +73,8 @@ function SpacingScale({ spacing }) {
   );
 }
 
-function RadiusGrid({ radius }) {
-  const flat = [];
+function RadiusGrid({ radius }: { radius: Record<string, Record<string, string>> }) {
+  const flat: FlatToken[] = [];
   for (const [group, steps] of Object.entries(radius)) {
     for (const [step, value] of Object.entries(steps)) {
       flat.push({ name: `${group}.${step}`, value });
@@ -84,7 +93,7 @@ function RadiusGrid({ radius }) {
   );
 }
 
-function ShadowGrid({ shadows }) {
+function ShadowGrid({ shadows }: { shadows: Record<string, string> }) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "32px" }}>
       {Object.entries(shadows).map(([name, value]) => (
@@ -97,11 +106,22 @@ function ShadowGrid({ shadows }) {
   );
 }
 
-function TypographySamples({ fontSize, fontFamily }) {
-  const family = fontFamily.label ? fontFamily.label[0] : "sans-serif";
+function TypographySamples({
+  fontSize,
+  fontFamily,
+}: {
+  fontSize: Record<string, Record<string, unknown>>;
+  fontFamily: Record<string, string[]>;
+}) {
+  const family = fontStack();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      {Object.entries(fontSize).map(([name, [size, opts]]) => (
+      {Object.entries(fontSize).map(([name, entry]) => {
+        const [size, opts] = entry as unknown as [
+          string,
+          { lineHeight: string; letterSpacing: string; fontWeight: string },
+        ];
+        return (
         <div key={name} style={{ display: "flex", alignItems: "baseline", gap: "16px" }}>
           <div style={{ width: "220px", fontFamily: "system-ui, sans-serif", fontSize: "11px", opacity: 0.6 }}>
             {name} — {size}/{opts.lineHeight}, {opts.letterSpacing}, {opts.fontWeight}
@@ -118,7 +138,8 @@ function TypographySamples({ fontSize, fontFamily }) {
             Design system tokens, synced from Figma.
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -135,7 +156,10 @@ function DesignTokensPage() {
 
       <section style={sectionStyle}>
         <div style={headingStyle}>Typography</div>
-        <TypographySamples fontSize={tailwindTokens.fontSize} fontFamily={tailwindTokens.fontFamily} />
+        <TypographySamples
+          fontSize={tailwindTokens.fontSize as unknown as Record<string, Record<string, unknown>>}
+          fontFamily={tailwindTokens.fontFamily as unknown as Record<string, string[]>}
+        />
       </section>
 
       <section style={sectionStyle}>

@@ -1,4 +1,5 @@
 import React from "react";
+import type { CSSProperties } from "react";
 import { action } from "@storybook/addon-actions";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
 import flatTokens from "../dist/json/tokens.json";
@@ -8,23 +9,36 @@ const CATEGORY_META = {
   icon: { prefix: "icon", tailwind: "text", description: "Icon color tokens — applied via text-{token} on SVGs" },
   border: { prefix: "border", tailwind: "border", description: "Border color tokens — applied via border-{token}" },
   background: { prefix: "background", tailwind: "bg", description: "Background color tokens — applied via bg-{token}" },
-};
+} as const;
 
-function flattenColors(obj, category, prefix = []) {
-  const out = [];
+type Category = keyof typeof CATEGORY_META;
+
+interface FlatColor {
+  name: string;
+  value: string;
+  hex: unknown;
+  category: string;
+}
+
+// Only color.* keys are looked up here; values are hex strings.
+const flatTokenMap = flatTokens as unknown as Record<string, string>;
+const colorsGrouped = tailwindTokens.colors as unknown as Record<Category, Record<string, unknown>>;
+
+function flattenColors(obj: Record<string, unknown>, category: Category, prefix: string[] = []): FlatColor[] {
+  const out: FlatColor[] = [];
   for (const [key, value] of Object.entries(obj)) {
     const path = [...prefix, key];
     if (typeof value === "string") {
       const name = path.join("-");
-      out.push({ name, value, hex: flatTokens[`color.${name}`], category });
+      out.push({ name, value, hex: flatTokenMap[`color.${name}`], category });
     } else {
-      out.push(...flattenColors(value, category, path));
+      out.push(...flattenColors(value as Record<string, unknown>, category, path));
     }
   }
   return out;
 }
 
-function SwatchGrid({ colors }) {
+function SwatchGrid({ colors }: { colors: FlatColor[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
       {colors.map((c) => (
@@ -41,7 +55,7 @@ function SwatchGrid({ colors }) {
           <div style={{ padding: "10px 12px" }}>
             <div style={{ fontSize: "11px", fontWeight: 600, wordBreak: "break-word", lineHeight: 1.4 }}>{c.name}</div>
             <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>
-              {c.hex} <span style={{ opacity: 0.7 }}>(light)</span>
+              {String(c.hex)} <span style={{ opacity: 0.7 }}>(light)</span>
             </div>
           </div>
         </div>
@@ -58,7 +72,7 @@ function UsageSection() {
     twClass: "bg-background-surface-primary",
     flatKey: "color.background.surface.primary",
   };
-  const codeStyle = {
+  const codeStyle: CSSProperties = {
     background: "#f6f8fa",
     border: "1px solid #e4e7eb",
     borderRadius: "8px",
@@ -176,10 +190,12 @@ export const AllColors = {};
 // ---------------------------------------------------------------------------
 // Interactive playground — Controls + Actions
 // ---------------------------------------------------------------------------
-const categories = Object.keys(CATEGORY_META).filter((c) => tailwindTokens.colors[c]);
+const categories = (Object.keys(CATEGORY_META) as Category[]).filter(
+  (c) => colorsGrouped[c]
+);
 
 const ALL_COLORS = categories.flatMap((category) =>
-  flattenColors(tailwindTokens.colors[category], category).map((c) => ({
+  flattenColors(colorsGrouped[category], category).map((c) => ({
     ...c,
     cssVar: `--color-${c.name}`,
     twClass: `${CATEGORY_META[category].tailwind}-${c.name}`,
@@ -188,8 +204,22 @@ const ALL_COLORS = categories.flatMap((category) =>
 );
 const COLOR_OPTIONS = ALL_COLORS.map((c) => c.name);
 
-function ColorPlayground({ colorToken, label, onClick }) {
-  const token = ALL_COLORS.find((c) => c.name === colorToken) ?? ALL_COLORS[0];
+function ColorPlayground({
+  colorToken,
+  label,
+  onClick,
+}: {
+  colorToken?: string;
+  label?: string;
+  onClick?: () => void;
+}) {
+  const fallback = ALL_COLORS[0];
+  if (!fallback) return null;
+  const token = ALL_COLORS.find((c) => c.name === colorToken) ?? fallback;
+
+  const [size, opts] = tailwindTokens.fontSize[
+    "label-medium-medium"
+  ] as unknown as [string, { lineHeight: string }];
   return (
     <div style={{ padding: "32px", fontFamily: "system-ui, sans-serif" }}>
       <div
@@ -203,7 +233,7 @@ function ColorPlayground({ colorToken, label, onClick }) {
           border: "1px solid #e0e0e0",
         }}
       >
-        <span style={{ font: `500 ${tailwindTokens.fontSize["label-medium-medium"][0]} ${tailwindTokens.fontSize["label-medium-medium"][1].lineHeight} system-ui, sans-serif` }}>
+        <span style={{ font: `500 ${size} ${opts.lineHeight} system-ui, sans-serif` }}>
           {label}
         </span>
         <button
@@ -253,7 +283,7 @@ export const Playground = {
     },
     label: { control: "text" },
   },
-  render: (args) => (
+  render: (args: { colorToken?: string; label?: string }) => (
     <ColorPlayground
       colorToken={args.colorToken}
       label={args.label}

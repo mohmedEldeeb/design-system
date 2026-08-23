@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import tw from "../../dist/json/tailwind-tokens.json";
-import { fontStack } from "./typography";
+import type { CSSProperties } from "react";
+import { fontStyle } from "./typography";
 
 const SIZES = {
   "x-small": { height: 32, radius: 6, px: 12, py: 8, gap: 4, icon: 16, font: "label-small-medium" },
@@ -8,11 +8,26 @@ const SIZES = {
   medium: { height: 44, radius: 10, px: 18, py: 12, gap: 6, icon: 20, font: "label-medium-medium" },
   large: { height: 52, radius: 12, px: 20, py: 14, gap: 8, icon: 24, font: "label-large-medium" },
   "x-large": { height: 56, radius: 12, px: 24, py: 16, gap: 10, icon: 24, font: "label-x-large-medium" },
-};
+} as const;
 
-const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
+export type ButtonSize = keyof typeof SIZES;
+export type ButtonType = "brand" | "neutral" | "destructive";
+export type ButtonHierarchy = "filled" | "tint" | "outlined" | "ghost";
 
-const VARIANTS = {
+const v = (name: string) => `var(--color-${name.replace(/\./g, "-")})`;
+
+interface VariantStyle {
+  bg?: string;
+  bgHover?: string;
+  bgActive?: string;
+  border?: string;
+  borderHover?: string;
+  borderActive?: string;
+  content: string;
+  contentHover?: string;
+}
+
+const VARIANTS: Record<ButtonType, Record<ButtonHierarchy, VariantStyle>> = {
   brand: {
     filled: {
       bg: v("background.brand.vibrant.default"),
@@ -104,15 +119,20 @@ const DISABLED = {
   content: v("text.neutral.quinary"),
 };
 
-function font(styleName) {
-  const [size, opts] = tw.fontSize[styleName];
-  return {
-    fontFamily: fontStack(),
-    fontSize: size,
-    lineHeight: opts.lineHeight,
-    letterSpacing: opts.letterSpacing,
-    fontWeight: opts.fontWeight,
-  };
+export interface ButtonProps {
+  type?: ButtonType;
+  hierarchy?: ButtonHierarchy;
+  size?: ButtonSize;
+  fab?: boolean;
+  disabled?: boolean;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  /** @deprecated use startIcon */
+  leftIcon?: React.ReactNode;
+  /** @deprecated use endIcon */
+  rightIcon?: React.ReactNode;
+  children?: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export function Button({
@@ -128,18 +148,20 @@ export function Button({
   children,
   onClick,
   ...rest
-}) {
-  const s = SIZES[size] ?? SIZES.medium;
-  const variant = VARIANTS[type]?.[hierarchy] ?? VARIANTS.brand.filled;
+}: ButtonProps &
+  Omit<React.ComponentPropsWithoutRef<"button">, "type" | "disabled" | "onClick">) {
+  const s = SIZES[size];
+  const variant: VariantStyle =
+    VARIANTS[type]?.[hierarchy] ?? VARIANTS.brand.filled;
   const iconStart = startIcon ?? leftIcon;
   const iconEnd = endIcon ?? rightIcon;
   const [hovered, setHovered] = useState(false);
   const [active, setActive] = useState(false);
   const [focused, setFocused] = useState(false);
 
-  let background;
-  let borderColor;
-  let color;
+  let background: string | undefined;
+  let borderColor: string | undefined;
+  let color: string | undefined;
 
   if (disabled) {
     background = hierarchy === "tint" ? DISABLED.bgTint : DISABLED.bg;
@@ -195,7 +217,7 @@ export function Button({
         rest.onBlur?.(e);
       }}
       style={{
-        ...font(s.font),
+        ...fontStyle(s.font),
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",

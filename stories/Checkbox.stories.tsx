@@ -1,10 +1,21 @@
 import React, { useState } from "react";
+import type { CSSProperties } from "react";
 import { Checkbox } from "../src/components/Checkbox";
+import type { CheckboxHierarchy, CheckboxProps, CheckboxSize } from "../src/components/Checkbox";
 import { fontStyle } from "../src/components/typography";
 
-const HIERARCHIES = ["filled", "tint", "outline"];
-const SIZES = ["small", "medium", "large"];
-const STATES = ["default", "hover", "focused", "disabled"];
+const HIERARCHIES: CheckboxHierarchy[] = ["filled", "tint", "outline"];
+const SIZES: CheckboxSize[] = ["small", "medium", "large"];
+const STATES = ["default", "hover", "focused", "disabled"] as const;
+
+interface PlaygroundArgs {
+  hierarchy?: CheckboxHierarchy;
+  size?: CheckboxSize;
+  checked?: boolean;
+  indeterminate?: boolean;
+  disabled?: boolean;
+  label?: string;
+}
 
 function PlaygroundRender({
   hierarchy,
@@ -13,7 +24,7 @@ function PlaygroundRender({
   indeterminate,
   disabled,
   label,
-}) {
+}: PlaygroundArgs) {
   const [on, setOn] = useState(checked);
   return (
     <div
@@ -39,7 +50,7 @@ function PlaygroundRender({
           checked={indeterminate ? checked : on}
           indeterminate={indeterminate}
           disabled={disabled}
-          onCheckedChange={setOn}
+          onCheckedChange={(next) => setOn(next === true)}
         />
         <span
           style={{
@@ -75,7 +86,15 @@ export const Playground = {
   render: PlaygroundRender,
 };
 
-function StateGroup({ hierarchy, size, state }) {
+function StateGroup({
+  hierarchy,
+  size,
+  state,
+}: {
+  hierarchy: CheckboxHierarchy;
+  size: CheckboxSize;
+  state: (typeof STATES)[number];
+}) {
   const [checked, setChecked] = useState(false);
   const disabled = state === "disabled";
   const forceState = state === "hover" || state === "focused" ? state : undefined;
@@ -87,7 +106,7 @@ function StateGroup({ hierarchy, size, state }) {
         checked={checked}
         disabled={disabled}
         forceState={forceState}
-        onCheckedChange={setChecked}
+        onCheckedChange={(next) => setChecked(next === true)}
       />
       <Checkbox
         hierarchy={hierarchy}
@@ -183,7 +202,7 @@ export const WithLabels = {
     const allChecked = children.every(Boolean);
     const someChecked = children.some(Boolean);
 
-    const row = {
+    const row: CSSProperties = {
       display: "flex",
       gap: "8px",
       alignItems: "center",
@@ -202,15 +221,15 @@ export const WithLabels = {
           background: "var(--color-background-surface-secondary)",
         }}
       >
-        <label style={row}>
-          <Checkbox
-            checked={single}
-            onCheckedChange={setSingle}
-            hierarchy="filled"
-            size="medium"
-          />
-          Accept terms and conditions
-        </label>
+          <label style={row}>
+            <Checkbox
+              checked={single}
+              onCheckedChange={(next) => setSingle(next === true)}
+              hierarchy="filled"
+              size="medium"
+            />
+            Accept terms and conditions
+          </label>
 
         <div
           style={{
@@ -220,7 +239,7 @@ export const WithLabels = {
             paddingInlineStart: "8px",
           }}
         >
-          <label style={{ ...row, fontWeight: 500 }}>
+          <label style={{ ...row, fontWeight: 500 } as CSSProperties}>
             <Checkbox
               checked={allChecked}
               indeterminate={someChecked && !allChecked}
@@ -236,8 +255,8 @@ export const WithLabels = {
             <Checkbox
               hierarchy="tint"
               size="small"
-              checked={children[0]}
-              onCheckedChange={(next) => setChildren([Boolean(next), children[1]])}
+              checked={children[0] ?? false}
+              onCheckedChange={(next) => setChildren([Boolean(next), children[1] ?? false])}
             />
             Email notifications
           </label>
@@ -245,8 +264,8 @@ export const WithLabels = {
             <Checkbox
               hierarchy="tint"
               size="small"
-              checked={children[1]}
-              onCheckedChange={(next) => setChildren([children[0], Boolean(next)])}
+              checked={children[1] ?? false}
+              onCheckedChange={(next) => setChildren([children[0] ?? false, Boolean(next)])}
             />
             SMS notifications
           </label>

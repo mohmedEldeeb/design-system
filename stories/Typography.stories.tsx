@@ -2,7 +2,14 @@ import React from "react";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
 import { fontStack } from "../src/components/typography";
 
-const CATEGORY_ORDER = ["display", "heading", "subheading", "label", "paragraph", "code"];
+const CATEGORY_ORDER = [
+  "display",
+  "heading",
+  "subheading",
+  "label",
+  "paragraph",
+  "code",
+] as const;
 
 const CATEGORY_DESCRIPTIONS = {
   display: "Large, bold text for hero sections and major headings",
@@ -13,17 +20,29 @@ const CATEGORY_DESCRIPTIONS = {
   code: "Monospace text for code and technical content",
 };
 
-function groupByCategory(fontSize) {
-  const groups = {};
-  for (const [name, [size, opts]] of Object.entries(fontSize)) {
-    const category = name.split("-")[0];
+interface TextStyleEntry {
+  tokenName: string;
+  size: string;
+  opts: { lineHeight: string; letterSpacing: string; fontWeight: string };
+}
+
+type Category = (typeof CATEGORY_ORDER)[number];
+
+function groupByCategory(fontSize: Record<string, Record<string, unknown>>): Record<string, TextStyleEntry[]> {
+  const groups: Record<string, TextStyleEntry[]> = {};
+  for (const [name, entry] of Object.entries(fontSize)) {
+    const [size, opts] = entry as unknown as [
+      string,
+      { lineHeight: string; letterSpacing: string; fontWeight: string },
+    ];
+    const category = name.split("-")[0] ?? "";
     groups[category] = groups[category] || [];
     groups[category].push({ tokenName: name, size, opts });
   }
   return groups;
 }
 
-function SpecimenRow({ family, tokenName, size, opts }) {
+function SpecimenRow({ family, tokenName, size, opts }: TextStyleEntry & { family: string }) {
   return (
     <div
       style={{
@@ -85,7 +104,9 @@ function SpecimenRow({ family, tokenName, size, opts }) {
 
 function TypographyPage() {
   const family = fontStack(tailwindTokens.fontFamily?.label ? "label" : "code");
-  const groups = groupByCategory(tailwindTokens.fontSize);
+  const groups = groupByCategory(
+    tailwindTokens.fontSize as unknown as Record<string, Record<string, unknown>>
+  );
   const ordered = CATEGORY_ORDER.filter((c) => groups[c]);
   const total = Object.values(groups).reduce((n, g) => n + g.length, 0);
 
@@ -103,10 +124,10 @@ function TypographyPage() {
             {category}
           </h2>
           <p style={{ font: "400 13px/1.5 system-ui, sans-serif", opacity: 0.55, margin: "0 0 12px" }}>
-            {CATEGORY_DESCRIPTIONS[category]}
+            {CATEGORY_DESCRIPTIONS[category as Category]}
           </p>
           <div>
-            {groups[category]
+            {(groups[category] ?? [])
               .sort((a, b) => a.tokenName.localeCompare(b.tokenName))
               .map((style) => (
                 <SpecimenRow

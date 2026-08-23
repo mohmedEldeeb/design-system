@@ -1,8 +1,10 @@
 import React from "react";
+import type { SVGProps } from "react";
 import { action } from "@storybook/addon-actions";
 import { Button } from "../src/components/Button";
+import type { ButtonHierarchy, ButtonSize, ButtonType } from "../src/components/Button";
 
-const ChevronIcon = (props) => (
+const ChevronIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="1em"
     height="1em"
@@ -37,6 +39,17 @@ const TrashIcon = (
   </svg>
 );
 
+interface PlaygroundArgs {
+  type?: ButtonType;
+  hierarchy?: ButtonHierarchy;
+  size?: ButtonSize;
+  label?: string;
+  fab?: boolean;
+  disabled?: boolean;
+  leftIcon?: boolean;
+  rightIcon?: boolean;
+}
+
 function PlaygroundRender({
   type,
   hierarchy,
@@ -46,7 +59,7 @@ function PlaygroundRender({
   disabled,
   leftIcon,
   rightIcon,
-}) {
+}: PlaygroundArgs) {
   return (
     <div
       style={{
@@ -108,9 +121,9 @@ export const Playground = {
   render: PlaygroundRender,
 };
 
-const HIERARCHIES = ["filled", "tint", "outlined", "ghost"];
+const HIERARCHIES: ButtonHierarchy[] = ["filled", "tint", "outlined", "ghost"];
 
-function TypeSection({ type }) {
+function TypeSection({ type }: { type: ButtonType }) {
   return (
     <section style={{ marginBottom: "48px" }}>
       <h2
@@ -251,7 +264,7 @@ export function AllStates() {
             flexWrap: "wrap",
           }}
         >
-          {["x-small", "small", "medium", "large", "x-large"].map((s) => (
+          {(["x-small", "small", "medium", "large", "x-large"] as ButtonSize[]).map((s) => (
             <Button
               key={s}
               size={s}

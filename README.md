@@ -17,17 +17,17 @@ Figma (Variables)
    │  Figma MCP: get_variable_defs
    ▼
 tokens/figma-raw/*.json        ← raw dump, one file per Figma frame/section
-   │  npm run tokens:from-figma  (scripts/build-source-tokens.js)
+   │  npm run tokens:from-figma  (scripts/build-source-tokens.ts)
    ▼
 tokens/tokens.json             ← categorized Style Dictionary source
-   │  npm run tokens:build       (style-dictionary.config.js)
+   │  npm run tokens:build       (style-dictionary.config.ts)
    ▼
 dist/css/variables.css         ← CSS custom properties (--color-*, --spacing-* ...)
-dist/json/tailwind-tokens.json ← theme object, consumed by tailwind.config.js
+dist/json/tailwind-tokens.json ← theme object, consumed by tailwind.config.ts
 dist/json/tokens.json          ← flat "dot.path": value map, for any JS consumer
    │
    ▼
-tailwind.config.js  →  Tailwind utility classes (bg-*, text-*, rounded-*, shadow-*, ...)
+tailwind.config.ts  →  Tailwind utility classes (bg-*, text-*, rounded-*, shadow-*, ...)
 stories/DesignTokens.stories.jsx → Storybook preview of every generated token
 ```
 
@@ -99,7 +99,7 @@ custom property can't hold a full font shorthand cleanly) — use the
 Tailwind `fontSize` entries for those, or read `dist/json/tokens.json` for
 the raw values.
 
-**Tailwind** — `tailwind.config.js` extends `theme` directly from
+**Tailwind** — `tailwind.config.ts` extends `theme` directly from
 `dist/json/tailwind-tokens.json`, so you get utilities like:
 
 ```jsx
@@ -115,8 +115,8 @@ Class names are verbose because they mirror Figma's own naming 1:1
 (`color.background.brand.vibrant.default` → `bg-background-brand-vibrant-default`).
 That's intentional for a first pass — it keeps the Figma ↔ code mapping
 unambiguous. If it's too verbose once real components land, alias the
-common ones in `tailwind.config.js` or flatten the token names in
-`scripts/build-source-tokens.js`.
+common ones in `tailwind.config.ts` or flatten the token names in
+`scripts/build-source-tokens.ts`.
 
 **Radix UI** — already in `dependencies` (the `radix-ui` package bundles
 all primitives). When you start building components, style Radix's

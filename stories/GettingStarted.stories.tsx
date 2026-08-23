@@ -1,10 +1,11 @@
 import React from "react";
+import type { CSSProperties } from "react";
 import { Button } from "../src/components/Button";
 import { LinkButton } from "../src/components/LinkButton";
 import { SocialButton } from "../src/components/SocialButton";
 import { ChevronIcon } from "../src/components/icons";
 
-const codeStyle = {
+const codeStyle: CSSProperties = {
   background: "#f6f8fa",
   border: "1px solid #e4e7eb",
   borderRadius: "8px",
@@ -27,7 +28,7 @@ const pStyle = {
   opacity: 0.75,
   marginBottom: "16px",
 };
-const demoBoxStyle = {
+const demoBoxStyle: CSSProperties = {
   border: "1px solid var(--color-border-surface-primary)",
   borderRadius: "12px",
   padding: "28px",
@@ -38,11 +39,11 @@ const demoBoxStyle = {
   justifyContent: "center",
 };
 
-function Code({ children }) {
+function Code({ children }: { children?: React.ReactNode }) {
   return <pre style={codeStyle}>{children}</pre>;
 }
 
-function Demo({ children }) {
+function Demo({ children }: { children?: React.ReactNode }) {
   return <div style={demoBoxStyle}>{children}</div>;
 }
 

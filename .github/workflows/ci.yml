@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build tokens
+        run: npm run tokens:sync
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: No legacy JS in source dirs
+        run: |
+          if git ls-files --error-unmatched "src/**/*.jsx" "stories/**/*.jsx" 2>/dev/null; then
+            echo "::error::Legacy .jsx files found — everything should be .ts/.tsx"
+            exit 1
+          else
+            echo "OK: no .jsx in src/ or stories/"
+          fi
+
+      - name: Build Storybook
+        run: npm run build-storybook

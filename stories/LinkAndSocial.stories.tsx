@@ -3,14 +3,35 @@ import { action } from "@storybook/addon-actions";
 import { LinkButton } from "../src/components/LinkButton";
 import { SocialButton } from "../src/components/SocialButton";
 import { ChevronIcon } from "../src/components/icons";
+import type {
+  LinkButtonSize,
+  LinkButtonType,
+} from "../src/components/LinkButton";
+import type { SocialBrand, SocialHierarchy } from "../src/components/SocialButton";
 
-const LINK_TYPES = ["primary", "information", "neutral", "success", "colored", "inverted"];
-const BRANDS = ["apple", "google", "facebook", "linkedin", "x", "github"];
+const LINK_TYPES: LinkButtonType[] = ["primary", "information", "neutral", "success", "colored", "inverted"];
+const BRANDS: SocialBrand[] = ["apple", "google", "facebook", "linkedin", "x", "github"];
 
 // ---------------------------------------------------------------------------
 // Link Button
 // ---------------------------------------------------------------------------
-function LinkPlaygroundRender({ type, size, label, fab, disabled, leftIcon, rightIcon }) {
+function LinkPlaygroundRender({
+  type,
+  size,
+  label,
+  fab,
+  disabled,
+  leftIcon,
+  rightIcon,
+}: {
+  type?: LinkButtonType;
+  size?: LinkButtonSize;
+  label?: string;
+  fab?: boolean;
+  disabled?: boolean;
+  leftIcon?: boolean;
+  rightIcon?: boolean;
+}) {
   return (
     <div style={{ padding: "40px", background: type === "inverted" ? "var(--color-background-fill-inverted-default)" : "var(--color-background-surface-secondary)" }}>
       <LinkButton
@@ -95,7 +116,7 @@ export function LinkAllStates() {
               </div>
             ))}
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-              {["x-small", "small", "medium", "large", "x-large"].map((s) => (
+              {(["x-small", "small", "medium", "large", "x-large"] as LinkButtonSize[]).map((s) => (
                 <LinkButton key={s} type={type} size={s} rightIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />} onClick={action(`link-${type}-${s}`)}>
                   {s}
                 </LinkButton>
@@ -113,7 +134,19 @@ LinkAllStates.parameters = { layout: "fullscreen" };
 // ---------------------------------------------------------------------------
 // Social Buttons
 // ---------------------------------------------------------------------------
-function SocialPlaygroundRender({ brand, hierarchy, label, iconOnly, disabled }) {
+function SocialPlaygroundRender({
+  brand,
+  hierarchy,
+  label,
+  iconOnly,
+  disabled,
+}: {
+  brand?: SocialBrand;
+  hierarchy?: SocialHierarchy;
+  label?: string;
+  iconOnly?: boolean;
+  disabled?: boolean;
+}) {
   return (
     <div style={{ padding: "40px", background: "var(--color-background-surface-secondary)", display: "flex", gap: "16px", flexWrap: "wrap" }}>
       <SocialButton brand={brand} hierarchy={hierarchy} disabled={disabled} onClick={action("social-click")}>
@@ -153,7 +186,7 @@ export function SocialAllStates() {
         Synced from the Figma “SOCIAL BUTTONS” page (Hierarchy × Brand × State).
       </p>
 
-      {["filled", "tint", "outlined"].map((hierarchy) => (
+      {(["filled", "tint", "outlined"] as SocialHierarchy[]).map((hierarchy) => (
         <section key={hierarchy} style={{ marginBottom: "32px" }}>
           <h2 style={{ font: "600 15px/1.4 system-ui, sans-serif", margin: "0 0 10px", textTransform: "capitalize" }}>{hierarchy}</h2>
           <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginBottom: "12px" }}>

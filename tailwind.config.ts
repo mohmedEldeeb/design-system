@@ -1,8 +1,12 @@
-const tokens = require("./dist/json/tailwind-tokens.json");
+import type { Config } from "tailwindcss";
+import tokens from "./dist/json/tailwind-tokens.json";
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./stories/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}", "./.storybook/**/*.{js,jsx,ts,tsx}"],
+export default {
+  content: [
+    "./stories/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./.storybook/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: tokens.colors,
@@ -15,4 +19,4 @@ module.exports = {
     },
   },
   plugins: [],
-};
+} satisfies Config;

@@ -4,12 +4,13 @@
   "private": false,
   "description": "Design tokens pipeline: Figma variables -> Style Dictionary -> CSS custom properties + Tailwind theme, previewed in Storybook. Radix UI primitives are installed and ready for the component layer.",
   "scripts": {
-    "tokens:from-figma": "node scripts/build-source-tokens.js",
-    "tokens:build": "node style-dictionary.config.js",
+    "tokens:from-figma": "tsx scripts/build-source-tokens.ts",
+    "tokens:build": "tsx style-dictionary.config.ts",
     "tokens:sync": "npm run tokens:from-figma && npm run tokens:build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "tokens:dark": "node scripts/build-dark-theme.js"
+    "tokens:dark": "tsx scripts/build-dark-theme.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "radix-ui": "^1.4.2"
@@ -19,6 +20,9 @@
     "@storybook/addon-themes": "^8.6.18",
     "@storybook/react": "^8.6.14",
     "@storybook/react-vite": "^8.6.14",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
@@ -27,6 +31,8 @@
     "storybook": "^8.6.14",
     "style-dictionary": "^4.3.3",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
     "vite": "^5.4.11"
   }
 }

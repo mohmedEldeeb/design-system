@@ -1,10 +1,21 @@
 import React, { useState } from "react";
-import tw from "../../dist/json/tailwind-tokens.json";
-import { fontStack } from "./typography";
+import { fontStyle } from "./typography";
 
-const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
+const v = (name: string) => `var(--color-${name.replace(/\./g, "-")})`;
 
-const TYPES = {
+export type LinkButtonType =
+  | "primary"
+  | "information"
+  | "neutral"
+  | "success"
+  | "colored"
+  | "inverted";
+export type LinkButtonSize = "x-small" | "small" | "medium" | "large" | "x-large";
+
+const TYPES: Record<
+  LinkButtonType,
+  { color: string; hover: string; focus: string; disabled: string }
+> = {
   primary: {
     color: v("text.brand.secondary"),
     hover: v("text.brand.tertiary"),
@@ -49,17 +60,20 @@ const SIZES = {
   medium: { gap: 6, icon: 20, font: "label-medium-medium" },
   large: { gap: 8, icon: 24, font: "label-large-medium" },
   "x-large": { gap: 10, icon: 24, font: "label-x-large-medium" },
-};
+} as const;
 
-function font(styleName) {
-  const [size, opts] = tw.fontSize[styleName];
-  return {
-    fontFamily: fontStack(),
-    fontSize: size,
-    lineHeight: opts.lineHeight,
-    letterSpacing: opts.letterSpacing,
-    fontWeight: opts.fontWeight,
-  };
+export interface LinkButtonProps {
+  type?: LinkButtonType;
+  size?: LinkButtonSize;
+  fab?: boolean;
+  disabled?: boolean;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  /** @deprecated use startIcon */
+  leftIcon?: React.ReactNode;
+  /** @deprecated use endIcon */
+  rightIcon?: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export function LinkButton({
@@ -74,9 +88,10 @@ export function LinkButton({
   children,
   onClick,
   ...rest
-}) {
-  const s = SIZES[size] ?? SIZES.medium;
-  const t = TYPES[type] ?? TYPES.primary;
+}: LinkButtonProps &
+  Omit<React.ComponentPropsWithoutRef<"button">, "type" | "disabled" | "onClick">) {
+  const s = SIZES[size];
+  const t = TYPES[type];
   const iconStart = startIcon ?? leftIcon;
   const iconEnd = endIcon ?? rightIcon;
   const [hovered, setHovered] = useState(false);
@@ -122,7 +137,7 @@ export function LinkButton({
         rest.onBlur?.(e);
       }}
       style={{
-        ...font(s.font),
+        ...fontStyle(s.font),
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",

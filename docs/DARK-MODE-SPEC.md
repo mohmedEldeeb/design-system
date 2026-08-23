@@ -84,7 +84,7 @@ Output: a map `{ "<figma variable name>": { light, dark } }`.
 ### Phase 4 — Storybook
 
 - Add `@storybook/addon-themes` to `.storybook/main.js` addons.
-- `.storybook/preview.js`: decorator setting `data-theme` on `<html>` /
+- `.storybook/preview.ts`: decorator setting `data-theme` on `<html>` /
   preview body; toolbar gets a Light/Dark switch.
 - Replace hardcoded story backgrounds (`#fafafa`, `#141414`) with
   `var(--color-background-surface-primary)` / semantic equivalents.

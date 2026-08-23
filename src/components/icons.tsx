@@ -1,4 +1,4 @@
-import React from "react";
+import type { SVGProps } from "react";
 
 export const socialBrandIcons = {
   apple: (
@@ -33,7 +33,7 @@ export const socialBrandIcons = {
   ),
 };
 
-export const ChevronIcon = (props) => (
+export const ChevronIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="1em"
     height="1em"

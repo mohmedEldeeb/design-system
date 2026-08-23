@@ -2,29 +2,43 @@
 /**
  * Style Dictionary build.
  *
- * Reads tokens/tokens.json (produced by scripts/build-source-tokens.js from
+ * Reads tokens/tokens.json (produced by scripts/build-source-tokens.ts from
  * the raw Figma variable dumps) and outputs:
  *
  *   dist/css/variables.css        - CSS custom properties, for any consumer
- *   dist/json/tailwind-tokens.json - a theme object consumed by tailwind.config.js
+ *   dist/json/tailwind-tokens.json - a theme object consumed by tailwind.config.ts
  *                                    and the Storybook token-preview story
  *   dist/json/tokens.json          - flat JSON token map (colors, spacing, etc.)
  *
  * JSON is used (rather than a CJS .js file with module.exports) so the same
- * output can be required() from Node (tailwind.config.js) and imported
+ * output can be required() from Node (tailwind.config.ts) and imported
  * natively by Vite/Storybook without any CJS/ESM interop issues.
  *
  * Run with: npm run tokens:build
  */
-const StyleDictionary = require("style-dictionary").default;
+import StyleDictionary from "style-dictionary";
 
-function cssVarName(token) {
-  return `--${token.path.join("-")}`;
+interface SDToken {
+  readonly path: readonly string[];
+  readonly type?: string;
+  readonly value: unknown;
+  readonly darkValue?: unknown;
 }
 
-function shadowLayerToCss(layer) {
-  return `${layer.offsetX} ${layer.offsetY} ${layer.blur} ${layer.spread} ${layer.color}`;
+interface SDLayer {
+  offsetX: unknown;
+  offsetY: unknown;
+  blur: unknown;
+  spread: unknown;
+  color: string;
 }
+
+type TokenTree = Record<string, unknown>;
+
+const cssVarName = (token: SDToken): string => `--${token.path.join("-")}`;
+
+const shadowLayerToCss = (layer: SDLayer): string =>
+  `${layer.offsetX} ${layer.offsetY} ${layer.blur} ${layer.spread} ${layer.color}`;
 
 // -----------------------------------------------------------------------
 // Custom format: CSS custom properties
@@ -32,18 +46,20 @@ function shadowLayerToCss(layer) {
 StyleDictionary.registerFormat({
   name: "custom/css-variables",
   format: async ({ dictionary }) => {
-    const light = [];
-    const dark = [];
-    for (const token of dictionary.allTokens) {
+    const light: string[] = [];
+    const dark: string[] = [];
+    for (const token of dictionary.allTokens as unknown as SDToken[]) {
       if (token.type === "typography") continue; // composite - see Tailwind output instead
-      let value;
+      let value: string | undefined;
       if (token.type === "boxShadow") {
-        const layers = Array.isArray(token.value) ? token.value : [token.value];
+        const layers = (
+          Array.isArray(token.value) ? token.value : [token.value]
+        ) as SDLayer[];
         value = layers.map(shadowLayerToCss).join(", ");
-      } else if (typeof token.value === "object") {
+      } else if (typeof token.value === "object" && token.value !== null) {
         continue; // skip anything else structured we don't have a CSS shape for
       } else {
-        value = token.value;
+        value = String(token.value);
       }
       light.push(`  ${cssVarName(token)}: ${value};`);
       if (typeof token.darkValue === "string") {
@@ -64,24 +80,32 @@ StyleDictionary.registerFormat({
 StyleDictionary.registerFormat({
   name: "custom/tailwind-theme",
   format: async ({ dictionary }) => {
-    const colors = {};
-    const spacing = {};
-    const borderRadius = {};
-    const borderWidth = {};
-    const boxShadow = {};
-    const fontFamily = {};
-    const fontSize = {};
+    const colors: TokenTree = {};
+    const spacing: Record<string, unknown> = {};
+    const borderRadius: TokenTree = {};
+    const borderWidth: TokenTree = {};
+    const boxShadow: Record<string, string> = {};
+    const fontFamily: Record<string, unknown[]> = {};
+    const fontSize: Record<string, unknown> = {};
 
-    const setDeep = (root, pathParts, value) => {
-      let node = root;
+    const setDeep = (
+      root: TokenTree,
+      pathParts: readonly string[],
+      value: unknown
+    ): void => {
+      let node: TokenTree = root;
       for (let i = 0; i < pathParts.length - 1; i++) {
-        node[pathParts[i]] = node[pathParts[i]] || {};
-        node = node[pathParts[i]];
+        const seg = pathParts[i] ?? "";
+        const existing = node[seg];
+        node[seg] =
+          typeof existing === "object" && existing !== null ? existing : {};
+        node = node[seg] as TokenTree;
       }
-      node[pathParts[pathParts.length - 1]] = value;
+      const last = pathParts[pathParts.length - 1] ?? "";
+      node[last] = value;
     };
 
-    for (const token of dictionary.allTokens) {
+    for (const token of dictionary.allTokens as unknown as SDToken[]) {
       const [category, ...rest] = token.path;
 
       if (category === "color") {
@@ -89,20 +113,24 @@ StyleDictionary.registerFormat({
         // theme (light/dark) instead of baking in a light-mode hex value.
         setDeep(colors, rest, `var(${cssVarName(token)})`);
       } else if (category === "spacing") {
-        spacing[rest[0]] = token.value;
+        spacing[rest[0] ?? ""] = token.value;
       } else if (category === "radius") {
         setDeep(borderRadius, rest, token.value);
       } else if (category === "borderWidth") {
         setDeep(borderWidth, rest, token.value);
       } else if (category === "shadow" && rest[rest.length - 1] === "composite") {
         const step = rest[0];
-        const layers = Array.isArray(token.value) ? token.value : [token.value];
+        if (!step) continue;
+        const layers = (
+          Array.isArray(token.value) ? token.value : [token.value]
+        ) as SDLayer[];
         boxShadow[step] = layers.map(shadowLayerToCss).join(", ");
       } else if (category === "typography" && rest[0] === "fontFamily") {
-        fontFamily[rest[1]] = [token.value];
+        fontFamily[rest[1] ?? ""] = [token.value];
       } else if (category === "typography" && rest[0] === "textStyle") {
         const name = rest[1];
-        const v = token.value;
+        if (!name) continue;
+        const v = token.value as Record<string, unknown>;
         fontSize[name] = [
           v.fontSize,
           {
@@ -125,8 +153,8 @@ StyleDictionary.registerFormat({
 StyleDictionary.registerFormat({
   name: "custom/flat-tokens",
   format: async ({ dictionary }) => {
-    const out = {};
-    for (const token of dictionary.allTokens) {
+    const out: Record<string, unknown> = {};
+    for (const token of dictionary.allTokens as unknown as SDToken[]) {
       out[token.path.join(".")] = token.value;
     }
     return JSON.stringify(out, null, 2) + "\n";

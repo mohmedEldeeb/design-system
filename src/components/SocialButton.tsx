@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import tw from "../../dist/json/tailwind-tokens.json";
 import { socialBrandIcons } from "./icons";
-import { fontStack } from "./typography";
+import { fontStyle } from "./typography";
 
-const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
+const v = (name: string) => `var(--color-${name.replace(/\./g, "-")})`;
 
-// Brand colors are fixed brand identities (not theme tokens), per the
-// Figma "Social Buttons" component set. Tint/outlined chrome uses tokens.
 const BRANDS = {
   apple: { color: "#000000", label: "Continue with Apple" },
   google: { color: "#f14336", label: "Continue with Google" },
@@ -14,17 +11,16 @@ const BRANDS = {
   linkedin: { color: "#0077b5", label: "Continue with LinkedIn" },
   x: { color: "#000000", label: "Continue with X" },
   github: { color: "#24292f", label: "Continue with GitHub" },
-};
+} as const;
 
-function font() {
-  const [size, opts] = tw.fontSize["label-medium-medium"];
-  return {
-    fontFamily: fontStack(),
-    fontSize: size,
-    lineHeight: opts.lineHeight,
-    letterSpacing: opts.letterSpacing,
-    fontWeight: opts.fontWeight,
-  };
+export type SocialBrand = keyof typeof BRANDS;
+export type SocialHierarchy = "filled" | "tint" | "outlined";
+
+export interface SocialButtonProps {
+  brand?: SocialBrand;
+  hierarchy?: SocialHierarchy;
+  disabled?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export function SocialButton({
@@ -34,26 +30,31 @@ export function SocialButton({
   onClick,
   children,
   ...rest
-}) {
-  const b = BRANDS[brand] ?? BRANDS.google;
+}: SocialButtonProps &
+  Omit<React.ComponentPropsWithoutRef<"button">, "disabled" | "onClick">) {
+  const b = BRANDS[brand];
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
 
-  let background;
-  let borderColor;
-  let color;
+  let background: string;
+  let borderColor: string;
+  let color: string;
 
   if (disabled) {
     background = v("background.static.disabled");
     borderColor = "transparent";
     color = v("icon.neutral.quinary");
   } else if (hierarchy === "tint") {
-    background = hovered ? v("background.fill.quaternary.hover") : v("background.fill.quaternary.default");
+    background = hovered
+      ? v("background.fill.quaternary.hover")
+      : v("background.fill.quaternary.default");
     borderColor = "transparent";
     color = b.color;
   } else if (hierarchy === "outlined") {
     background = hovered ? v("background.static.hover") : "#ffffff";
-    borderColor = hovered ? v("border.fill.tertiary.hover") : v("border.fill.tertiary.default");
+    borderColor = hovered
+      ? v("border.fill.tertiary.hover")
+      : v("border.fill.tertiary.default");
     color = b.color;
   } else {
     background = b.color;
@@ -61,7 +62,7 @@ export function SocialButton({
     color = "#ffffff";
   }
 
-  const icon = socialBrandIcons[brand] ?? socialBrandIcons.google;
+  const icon = socialBrandIcons[brand];
   const iconBox = {
     width: 20,
     height: 20,
@@ -88,7 +89,7 @@ export function SocialButton({
         rest.onBlur?.(e);
       }}
       style={{
-        ...font(),
+        ...fontStyle("label-medium-medium"),
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -100,14 +101,19 @@ export function SocialButton({
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "background 120ms ease, border-color 120ms ease",
         outline: "none",
-        boxShadow: focused && !disabled ? `0 0 0 2px var(--color-background-static-default), 0 0 0 4px ${v("border.fill.secondary.default")}` : "none",
+        boxShadow:
+          focused && !disabled
+            ? `0 0 0 2px var(--color-background-static-default), 0 0 0 4px ${v("border.fill.secondary.default")}`
+            : "none",
         background,
         border: `1px solid ${borderColor}`,
         color,
       }}
       {...rest}
     >
-      <span aria-hidden style={iconBox}>{icon}</span>
+      <span aria-hidden style={iconBox}>
+        {icon}
+      </span>
       {children != null && children}
     </button>
   );
