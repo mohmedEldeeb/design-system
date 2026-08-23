@@ -125,6 +125,7 @@ export function Checkbox({
   defaultChecked = false,
   indeterminate = false,
   disabled = false,
+  forceState,
   onCheckedChange,
   ...rest
 }) {
@@ -134,6 +135,8 @@ export function Checkbox({
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
   const isControlled = controlledChecked !== undefined;
   const isChecked = isControlled ? controlledChecked : internalChecked;
+  const showHover = forceState === "hover" || hovered;
+  const showFocus = forceState === "focused" || focused;
 
   let background;
   let borderColor;
@@ -149,10 +152,10 @@ export function Checkbox({
     color = d.icon;
   } else {
     const variant = isChecked || indeterminate ? CHECKED[hierarchy] : UNCHECKED[hierarchy];
-    background = hovered && variant.hoverBg !== undefined ? variant.hoverBg : variant.bg;
-    borderColor = hovered && variant.hoverBorder !== undefined ? variant.hoverBorder : variant.border;
+    background = showHover && variant.hoverBg !== undefined ? variant.hoverBg : variant.bg;
+    borderColor = showHover && variant.hoverBorder !== undefined ? variant.hoverBorder : variant.border;
     color = variant.icon;
-    if (focused) {
+    if (showFocus) {
       boxShadow = RINGS[variant.ring];
       borderWidth = "0px";
     }

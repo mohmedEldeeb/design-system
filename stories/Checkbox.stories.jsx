@@ -13,6 +13,7 @@ function PlaygroundRender({
   disabled,
   label,
 }) {
+  const [on, setOn] = useState(checked);
   return (
     <div
       style={{
@@ -23,23 +24,32 @@ function PlaygroundRender({
         background: "var(--color-background-surface-secondary)",
       }}
     >
-      <Checkbox
-        hierarchy={hierarchy}
-        size={size}
-        checked={checked}
-        indeterminate={indeterminate}
-        disabled={disabled}
-      />
       <label
         style={{
-          fontFamily:
-            "'Plus Jakarta Sans', system-ui, sans-serif",
-          fontSize: "14px",
-          color: "var(--color-text-neutral-secondary)",
-          userSelect: "none",
+          display: "inline-flex",
+          gap: "12px",
+          alignItems: "center",
+          cursor: disabled ? "not-allowed" : "pointer",
         }}
       >
-        {label}
+        <Checkbox
+          hierarchy={hierarchy}
+          size={size}
+          checked={indeterminate ? checked : on}
+          indeterminate={indeterminate}
+          disabled={disabled}
+          onCheckedChange={setOn}
+        />
+        <span
+          style={{
+            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+            fontSize: "14px",
+            color: "var(--color-text-neutral-secondary)",
+            userSelect: "none",
+          }}
+        >
+          {label}
+        </span>
       </label>
     </div>
   );
@@ -68,6 +78,7 @@ export const Playground = {
 function StateGroup({ hierarchy, size, state }) {
   const [checked, setChecked] = useState(false);
   const disabled = state === "disabled";
+  const forceState = state === "hover" || state === "focused" ? state : undefined;
   return (
     <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
       <Checkbox
@@ -75,6 +86,7 @@ function StateGroup({ hierarchy, size, state }) {
         size={size}
         checked={checked}
         disabled={disabled}
+        forceState={forceState}
         onCheckedChange={setChecked}
       />
       <Checkbox
@@ -83,12 +95,14 @@ function StateGroup({ hierarchy, size, state }) {
         checked={!disabled && true}
         indeterminate
         disabled={disabled}
+        forceState={forceState}
       />
       <Checkbox
         hierarchy={hierarchy}
         size={size}
         checked
         disabled={disabled}
+        forceState={forceState}
       />
     </div>
   );
