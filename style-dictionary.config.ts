@@ -18,6 +18,10 @@
  */
 import StyleDictionary from "style-dictionary";
 
+// Output root — overridable so tests can build into a temp dir instead of
+// clobbering the working tree's dist/.
+const DIST_DIR = process.env.TOKENS_DIST_DIR ?? "dist/";
+
 interface SDToken {
   readonly path: readonly string[];
   readonly type?: string;
@@ -167,15 +171,15 @@ const sd = new StyleDictionary({
   platforms: {
     css: {
       transformGroup: "css",
-      buildPath: "dist/css/",
+      buildPath: `${DIST_DIR}css/`,
       files: [{ destination: "variables.css", format: "custom/css-variables" }],
     },
     tailwind: {
-      buildPath: "dist/json/",
+      buildPath: `${DIST_DIR}json/`,
       files: [{ destination: "tailwind-tokens.json", format: "custom/tailwind-theme" }],
     },
     js: {
-      buildPath: "dist/json/",
+      buildPath: `${DIST_DIR}json/`,
       files: [{ destination: "tokens.json", format: "custom/flat-tokens" }],
     },
   },

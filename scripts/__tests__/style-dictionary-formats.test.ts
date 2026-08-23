@@ -1,7 +1,11 @@
 import { execSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+// Build into an isolated dir so the test never touches the real dist/.
+const outDir = mkdtempSync(join(tmpdir(), "sd-format-test-"));
 
 // Shape assertions on generated output — deliberately NOT byte snapshots so
 // they survive Figma re-syncs. Runs the real build first.
@@ -10,9 +14,16 @@ let css: string;
 let tailwindTokens: Record<string, unknown>;
 
 beforeAll(() => {
-  execSync("npx tsx style-dictionary.config.ts", { stdio: "pipe" });
-  css = readFileSync(join("dist", "css", "variables.css"), "utf8");
-  tailwindTokens = JSON.parse(readFileSync(join("dist", "json", "tailwind-tokens.json"), "utf8"));
+  execSync("npx tsx style-dictionary.config.ts", {
+    stdio: "pipe",
+    env: { ...process.env, TOKENS_DIST_DIR: `${outDir}/` },
+  });
+  css = readFileSync(join(outDir, "css", "variables.css"), "utf8");
+  tailwindTokens = JSON.parse(readFileSync(join(outDir, "json", "tailwind-tokens.json"), "utf8"));
+});
+
+afterAll(() => {
+  rmSync(outDir, { recursive: true, force: true });
 });
 
 describe("CSS custom properties output", () => {

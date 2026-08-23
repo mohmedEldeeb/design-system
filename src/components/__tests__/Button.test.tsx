@@ -27,7 +27,11 @@ describe("variant matrix completeness", () => {
 
   it.each([true, false] as const)("renders fab=%s and disabled states without crashing", (fab) => {
     for (const disabled of [false, true]) {
-      const { unmount } = render(<Button fab disabled={disabled} aria-label="Action" />);
+      const { unmount } = render(
+        <Button fab={fab} disabled={disabled} aria-label="Action">
+          Continue
+        </Button>
+      );
       expect(screen.getByRole("button")).toBeInTheDocument();
       unmount();
     }
