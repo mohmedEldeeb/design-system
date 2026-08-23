@@ -97,8 +97,9 @@ design-system/
 ### Pass 3 — Verify, then report
 ```bash
 npx esbuild --loader:.jsx=jsx --jsx=automatic <changed .jsx files> --outdir=/tmp/review-check
-grep -o "\-\-color-[a-z0-9.-]*" <changed files>   # confirm each in dist/css/variables.css
+grep -o "\-\-color-[a-z0-9.-]*" <changed files>   # confirm each exists in dist/css/variables.css
 npm run tokens:build                               # only if tokens/ changed
+npx tsc --noEmit                                   # only if tsconfig.json exists (TypeScript)
 ```
 Unverified claims must be tagged `(suspected)` — never stated as certain.
 
