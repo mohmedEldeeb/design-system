@@ -9,7 +9,7 @@ const SIZES = {
   "x-large": { height: 56, radius: 12, px: 24, py: 16, gap: 10, icon: 24, font: "label-x-large-medium" },
 };
 
-const v = (name) => `var(--color-${name})`;
+const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
 
 const VARIANTS = {
   brand: {

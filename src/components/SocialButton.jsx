@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import tw from "../../dist/json/tailwind-tokens.json";
 import { socialBrandIcons } from "./icons";
 
-const v = (name) => `var(--color-${name})`;
+const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
 
 // Brand colors are fixed brand identities (not theme tokens), per the
 // Figma "Social Buttons" component set. Tint/outlined chrome uses tokens.

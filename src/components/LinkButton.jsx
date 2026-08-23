@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import tw from "../../dist/json/tailwind-tokens.json";
 
-const v = (name) => `var(--color-${name})`;
+const v = (name) => `var(--color-${name.replace(/\./g, "-")})`;
 
 const TYPES = {
   primary: {
