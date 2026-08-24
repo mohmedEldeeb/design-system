@@ -1,13 +1,13 @@
 import type { CSSProperties } from "react";
-import tw from "../../dist/json/tailwind-tokens.json";
+import { fontFamily as families, fontSize as sizes } from "../generated/tokens";
 
 const FALLBACKS = 'Arial, Tahoma, "Segoe UI", sans-serif';
 
-export type FontFamilyName = keyof typeof tw.fontFamily;
-export type FontToken = keyof typeof tw.fontSize;
+export type FontFamilyName = keyof typeof families;
+export type FontToken = keyof typeof sizes;
 
 export function fontStack(name: FontFamilyName = "label"): string {
-  const primary = tw.fontFamily[name]?.[0];
+  const primary = families[name]?.[0];
   return primary ? `"${primary}", ${FALLBACKS}` : FALLBACKS;
 }
 
@@ -18,9 +18,9 @@ interface TypographyOptions {
 }
 
 // resolveJsonModule types tuple entries as plain arrays; narrow once at the
-// token boundary — every entry in tailwind-tokens.json is [size, options].
+// token boundary — every entry in fontSize is [size, options].
 function token(styleName: FontToken): readonly [string, TypographyOptions] {
-  const entry = tw.fontSize[styleName];
+  const entry = sizes[styleName];
   if (!entry || entry.length < 2) throw new Error(`Unknown typography token: ${styleName}`);
   return entry as unknown as readonly [string, TypographyOptions];
 }

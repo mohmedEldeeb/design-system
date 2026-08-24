@@ -1,9 +1,47 @@
 {
   "name": "micro-design-system",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
-  "description": "Design tokens pipeline: Figma variables -> Style Dictionary -> CSS custom properties + Tailwind theme, previewed in Storybook. Radix UI primitives are installed and ready for the component layer.",
+  "license": "MIT",
+  "description": "Design tokens + component layer: Figma variables -> Style Dictionary -> CSS custom properties + Tailwind theme, with React components styled via token CSS variables.",
+  "keywords": [
+    "design-system",
+    "design-tokens",
+    "react",
+    "tailwind",
+    "style-dictionary",
+    "rtl"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/lib/index.cjs",
+  "module": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.js",
+      "require": "./dist/lib/index.cjs"
+    },
+    "./styles.css": "./dist/css/styles.css",
+    "./variables.css": "./dist/css/variables.css",
+    "./tokens.json": "./dist/json/tokens.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "tokens:from-figma": "tsx --env-file-if-exists=.env scripts/build-source-tokens.ts",
+    "tokens:build": "tsx --env-file-if-exists=.env style-dictionary.config.ts",
+    "tokens:gen-ts": "tsx scripts/generate-ts-tokens.ts",
+    "tokens:sync": "npm run tokens:from-figma && npm run tokens:build && npm run tokens:gen-ts",
+    "build:css": "tsx --env-file-if-exists=.env scripts/bundle-css.ts",
+    "build:lib": "vite build --config vite.lib.config.ts && npm run build:css",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build": "npm run tokens:sync && npm run build:lib && npm run build:types",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "tokens:from-figma": "tsx --env-file-if-exists=.env scripts/build-source-tokens.ts",
     "tokens:build": "tsx --env-file-if-exists=.env style-dictionary.config.ts",
     "tokens:sync": "npm run tokens:from-figma && npm run tokens:build",
@@ -18,6 +56,10 @@
   },
   "dependencies": {
     "radix-ui": "^1.4.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
