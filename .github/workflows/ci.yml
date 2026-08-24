@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Token pipeline
+        run: npm run tokens:sync
+
+      - name: Generated tokens drift guard
+        run: git diff --exit-code src/generated dist/json dist/css
+
+      - run: npm run typecheck
+
+      - run: npm test
