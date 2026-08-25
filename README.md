@@ -7,6 +7,9 @@ CSS custom properties, Tailwind preset, typed TS tokens, dark mode, RTL-ready.
 npm i micro-design-system
 ```
 
+> **React developers:** see [REACT_GUIDE.md](./REACT_GUIDE.md) for full component API,
+> typography usage, color tokens, dark mode patterns, and a complete login-page example.
+
 ---
 
 ## Quick setup (2 minutes)
