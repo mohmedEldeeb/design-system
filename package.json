@@ -26,6 +26,7 @@
     },
     "./styles.css": "./dist/css/styles.css",
     "./variables.css": "./dist/css/variables.css",
+    "./tailwind-preset": "./dist/json/tailwind-preset.json",
     "./tokens.json": "./dist/json/tokens.json",
     "./package.json": "./package.json"
   },

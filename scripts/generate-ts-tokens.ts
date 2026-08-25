@@ -29,6 +29,13 @@ const DARK_FILE =
   path.resolve(import.meta.dirname, "..", "tokens", "dark-theme.json");
 const OUT_DIR = path.resolve(import.meta.dirname, "..", "src", "generated");
 const OUT_FILE = path.join(OUT_DIR, "tokens.ts");
+const PRESET_OUT_FILE = path.resolve(
+  import.meta.dirname,
+  "..",
+  "dist",
+  "json",
+  "tailwind-preset.json"
+);
 
 interface ThemeTokens {
   readonly colors: Record<string, unknown>;
@@ -87,4 +94,141 @@ export type DarkColorName = keyof typeof darkColors;
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.writeFileSync(OUT_FILE, out);
+
+// ---------------------------------------------------------------------------
+// src/generated/typography.ts — nested typography presets for autocomplete:
+//
+//   <h1 style={typography.display.large.bold}>
+// ---------------------------------------------------------------------------
+interface FontSizeEntry {
+  readonly [size: string]: unknown;
+}
+
+const entries = Object.entries(theme.fontSize as FontSizeEntry) as ReadonlyArray<
+  readonly [string, unknown]
+>;
+
+const styleFn = `function style(
+  fontSize: string,
+  lineHeight: string,
+  letterSpacing: string,
+  fontWeight: string,
+): CSSProperties {
+  return { fontFamily: FONT_STACK, fontSize, lineHeight, letterSpacing, fontWeight };
+}
+`;
+
+const groups = new Map<string, Map<string, Map<string, unknown>>>();
+for (const [name, value] of entries) {
+  const parts = name.split("-");
+  if (parts.length < 3) continue;
+  const family = parts[0] as string;
+  const weight = parts[parts.length - 1] as string;
+  const size = parts.slice(1, -1).join("-");
+  if (!groups.has(family)) groups.set(family, new Map());
+  const sizesMap = groups.get(family)!;
+  if (!sizesMap.has(size)) sizesMap.set(size, new Map());
+  sizesMap.get(size)!.set(weight, value);
+}
+
+const emitStyle = (value: unknown): string => {
+  const entry = value as readonly [string, Record<string, string>];
+  if (!Array.isArray(entry) || entry.length < 2 || typeof entry[1] !== "object") {
+    throw new Error(`Unexpected fontSize token shape for ${String(entry?.[0])}`);
+  }
+  const [fontSize, opts] = entry;
+  return `style(${JSON.stringify(fontSize)}, ${JSON.stringify(opts.lineHeight)}, ${JSON.stringify(opts.letterSpacing)}, ${JSON.stringify(opts.fontWeight)})`;
+};
+
+const emitLevel = (
+  node: Map<string, Map<string, unknown>> | Map<string, unknown>,
+  depth: number
+): string => {
+  const indent = "  ".repeat(depth);
+  const inner = "  ".repeat(depth + 1);
+  const lines: string[] = [];
+  lines.push("{");
+  for (const [key, child] of node) {
+    const safeKey = JSON.stringify(key);
+    if (child instanceof Map) {
+      lines.push(`${inner}${safeKey}: ${emitLevel(child, depth + 1)},`);
+    } else {
+      lines.push(`${inner}${safeKey}: ${emitStyle(child)},`);
+    }
+  }
+  lines.push(`${indent}}`);
+  return lines.join("\n");
+};
+
+const typographyOut = `${banner.replace("tokens.ts", "typography.ts")}
+import type { CSSProperties } from "react";
+
+/** Arabic-capable fallbacks appended to every Figma family (see CLAUDE.md). */
+const FONT_STACK =
+  '"Plus Jakarta Sans", Arial, Tahoma, "Segoe UI", sans-serif';
+
+${styleFn}
+/** All text styles from Figma, pre-resolved to React CSSProperties.
+ *
+ *  Usage (full autocomplete at every level):
+ *    <h1 style={typography.display.large.bold}>Title</h1>
+ */
+export const typography = ${emitLevel(groups, 0)} as const;
+
+export type TypographyFamily = keyof typeof typography;
+export type TypographySize<F extends TypographyFamily = TypographyFamily> =
+  keyof (typeof typography)[F];
+export type TypographyWeight<
+  F extends TypographyFamily = TypographyFamily,
+  S extends TypographySize<F> = TypographySize<F>,
+> = keyof (typeof typography)[F][S];
+`;
+
+fs.writeFileSync(path.join(OUT_DIR, "typography.ts"), typographyOut);
+
+// ---------------------------------------------------------------------------
+// dist/json/tailwind-preset.json — drop-in Tailwind preset for consumer apps:
+//
+//   // tailwind.config.js
+//   presets: [require("micro-design-system/tailwind-preset")]
+//
+// Gives classes like text-display-medium-bold / bg-background-brand-vibrant-
+// default. `spacing` is intentionally excluded: Figma keys are px numbers
+// ("4" = 4px) which would silently override Tailwind's defaults
+// ("4" = 1rem). Consumers can add `theme.extend.spacing` themselves if they
+// accept that trade-off.
+// ---------------------------------------------------------------------------
+// Tailwind v3 only auto-flattens `colors`; every other namespace needs flat
+// keys or nested entries are unreachable as classes
+// (e.g. radius.components.md -> rounded-components-md).
+function flattenTheme(
+  node: Record<string, unknown>,
+  prefix = ""
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (typeof value === "object" && value !== null) {
+      Object.assign(out, flattenTheme(value as Record<string, unknown>, `${prefix}${key}-`));
+    } else {
+      out[`${prefix}${key}`] = value;
+    }
+  }
+  return out;
+}
+
+const preset = {
+  theme: {
+    extend: {
+      colors: theme.colors,
+      borderRadius: flattenTheme(theme.borderRadius),
+      borderWidth: flattenTheme(theme.borderWidth),
+      boxShadow: theme.boxShadow,
+      fontFamily: theme.fontFamily,
+      fontSize: theme.fontSize,
+    },
+  },
+};
+fs.writeFileSync(PRESET_OUT_FILE, JSON.stringify(preset, null, 2) + "\n");
+console.log(`Wrote ${PRESET_OUT_FILE}`);
+console.log(`Wrote ${path.join(OUT_DIR, "typography.ts")}`);
 console.log(`Wrote ${OUT_FILE}`);

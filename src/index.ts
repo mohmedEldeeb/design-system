@@ -34,6 +34,13 @@ export { socialBrandIcons, ChevronIcon } from "./components/icons";
 export { fontStack, fontStyle } from "./components/typography";
 export type { FontFamilyName, FontToken } from "./components/typography";
 
+export { typography } from "./generated/typography";
+export type {
+  TypographyFamily,
+  TypographySize,
+  TypographyWeight,
+} from "./generated/typography";
+
 // --- helpers ----------------------------------------------------------------
 export { cssVar } from "./css-var";
 export { setTheme, getTheme, toggleTheme } from "./theme";

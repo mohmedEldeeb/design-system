@@ -6,6 +6,8 @@ const FALLBACKS = 'Arial, Tahoma, "Segoe UI", sans-serif';
 export type FontFamilyName = keyof typeof families;
 export type FontToken = keyof typeof sizes;
 
+/** Accepts both "display-medium-bold" and "display.medium.bold" (the dot
+ *  format matches every other token in the system). */
 export function fontStack(name: FontFamilyName = "label"): string {
   const primary = families[name]?.[0];
   return primary ? `"${primary}", ${FALLBACKS}` : FALLBACKS;
@@ -17,15 +19,21 @@ interface TypographyOptions {
   fontWeight: string;
 }
 
+function normalize(styleName: string): FontToken {
+  return (styleName.includes(".")
+    ? styleName.replaceAll(".", "-")
+    : styleName) as FontToken;
+}
+
 // resolveJsonModule types tuple entries as plain arrays; narrow once at the
 // token boundary — every entry in fontSize is [size, options].
-function token(styleName: FontToken): readonly [string, TypographyOptions] {
-  const entry = sizes[styleName];
+function token(styleName: string): readonly [string, TypographyOptions] {
+  const entry = sizes[normalize(styleName)];
   if (!entry || entry.length < 2) throw new Error(`Unknown typography token: ${styleName}`);
   return entry as unknown as readonly [string, TypographyOptions];
 }
 
-export function fontStyle(styleName: FontToken): CSSProperties {
+export function fontStyle(styleName: string): CSSProperties {
   const [size, opts] = token(styleName);
   return {
     fontFamily: fontStack(),
