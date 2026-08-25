@@ -1,4 +1,3 @@
-import React from "react";
 import type { SVGProps } from "react";
 import { action } from "@storybook/addon-actions";
 import { Button } from "../src/components/Button";
@@ -46,8 +45,8 @@ interface PlaygroundArgs {
   label?: string;
   fab?: boolean;
   disabled?: boolean;
-  leftIcon?: boolean;
-  rightIcon?: boolean;
+  startIcon?: boolean;
+  endIcon?: boolean;
 }
 
 function PlaygroundRender({
@@ -57,8 +56,8 @@ function PlaygroundRender({
   label,
   fab,
   disabled,
-  leftIcon,
-  rightIcon,
+  startIcon,
+  endIcon,
 }: PlaygroundArgs) {
   return (
     <div
@@ -77,9 +76,9 @@ function PlaygroundRender({
         size={size}
         fab={fab}
         disabled={disabled}
-        leftIcon={leftIcon ? <ChevronIcon /> : undefined}
-        rightIcon={
-          rightIcon ? (
+        startIcon={startIcon ? <ChevronIcon /> : undefined}
+        endIcon={
+          endIcon ? (
             <ChevronIcon style={{ transform: "rotate(180deg)" }} />
           ) : undefined
         }
@@ -99,8 +98,8 @@ export const Playground = {
     label: "Continue",
     fab: false,
     disabled: false,
-    leftIcon: false,
-    rightIcon: false,
+    startIcon: false,
+    endIcon: false,
   },
   argTypes: {
     type: { control: "radio", options: ["brand", "neutral", "destructive"] },
@@ -115,8 +114,8 @@ export const Playground = {
     label: { control: "text", if: { arg: "fab", truthy: false } },
     fab: { control: "boolean", description: "Icon-only square button" },
     disabled: { control: "boolean" },
-    leftIcon: { control: "boolean" },
-    rightIcon: { control: "boolean" },
+    startIcon: { control: "boolean" },
+    endIcon: { control: "boolean" },
   },
   render: PlaygroundRender,
 };
@@ -177,7 +176,7 @@ function TypeSection({ type }: { type: ButtonType }) {
               type={type}
               hierarchy={hierarchy}
               size="small"
-              leftIcon={<ChevronIcon />}
+              startIcon={<ChevronIcon />}
               onClick={action(`${type}-${hierarchy}`)}
             >
               Continue
@@ -187,7 +186,7 @@ function TypeSection({ type }: { type: ButtonType }) {
               hierarchy={hierarchy}
               size="small"
               fab
-              leftIcon={TrashIcon}
+              startIcon={TrashIcon}
               aria-label="Action"
               onClick={action(`${type}-${hierarchy}-fab`)}
             />
@@ -206,7 +205,7 @@ function TypeSection({ type }: { type: ButtonType }) {
               size="small"
               disabled
               fab
-              leftIcon={TrashIcon}
+              startIcon={TrashIcon}
               aria-label="Action"
             />
           </div>

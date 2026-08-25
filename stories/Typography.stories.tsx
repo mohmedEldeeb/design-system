@@ -1,4 +1,3 @@
-import React from "react";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
 import { fontStack } from "../src/components/typography";
 

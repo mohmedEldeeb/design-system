@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import type { CSSProperties } from "react";
 import { fontStyle } from "./typography";
 
 const SIZES = {

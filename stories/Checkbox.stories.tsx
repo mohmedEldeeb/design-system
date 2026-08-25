@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 import { Checkbox } from "../src/components/Checkbox";
-import type { CheckboxHierarchy, CheckboxProps, CheckboxSize } from "../src/components/Checkbox";
+import type { CheckboxHierarchy, CheckboxSize } from "../src/components/Checkbox";
 import { fontStyle } from "../src/components/typography";
 
 const HIERARCHIES: CheckboxHierarchy[] = ["filled", "tint", "outline"];
@@ -111,7 +111,7 @@ function StateGroup({
       <Checkbox
         hierarchy={hierarchy}
         size={size}
-        checked={!disabled && true}
+        checked={!disabled}
         indeterminate
         disabled={disabled}
         forceState={forceState}

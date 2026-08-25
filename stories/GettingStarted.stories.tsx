@@ -134,7 +134,7 @@ tokens["color.background.brand.vibrant.default"];
         </p>
         <Demo>
           <Button hierarchy="filled">Continue</Button>
-          <Button hierarchy="tint" leftIcon={<ChevronIcon />}>
+          <Button hierarchy="tint" startIcon={<ChevronIcon />}>
             Continue
           </Button>
           <Button hierarchy="outlined">Continue</Button>
@@ -147,14 +147,14 @@ tokens["color.background.brand.vibrant.default"];
           <Button
             size="small"
             fab
-            leftIcon={<ChevronIcon />}
+            startIcon={<ChevronIcon />}
             aria-label="Next"
           />
         </Demo>
         <div style={{ height: "12px" }} />
         <Code>{`import { Button } from "@micro-design-system";
 
-<Button hierarchy="tint" leftIcon={<ChevronIcon />} onClick={save}>
+<Button hierarchy="tint" startIcon={<ChevronIcon />} onClick={save}>
   Continue
 </Button>
 
@@ -162,7 +162,7 @@ tokens["color.background.brand.vibrant.default"];
   Delete
 </Button>
 
-<Button size="small" fab leftIcon={<ChevronIcon />} aria-label="Next" />`}</Code>
+<Button size="small" fab startIcon={<ChevronIcon />} aria-label="Next" />`}</Code>
       </section>
 
       {/* ---------------------------------------------------------------- */}
@@ -175,7 +175,7 @@ tokens["color.background.brand.vibrant.default"];
         <Demo>
           <LinkButton
             type="primary"
-            rightIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />}
+            endIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />}
           >
             Learn more
           </LinkButton>

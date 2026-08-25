@@ -1,4 +1,3 @@
-import React from "react";
 import { action } from "@storybook/addon-actions";
 import { LinkButton } from "../src/components/LinkButton";
 import { SocialButton } from "../src/components/SocialButton";
@@ -21,16 +20,16 @@ function LinkPlaygroundRender({
   label,
   fab,
   disabled,
-  leftIcon,
-  rightIcon,
+  startIcon,
+  endIcon,
 }: {
   type?: LinkButtonType;
   size?: LinkButtonSize;
   label?: string;
   fab?: boolean;
   disabled?: boolean;
-  leftIcon?: boolean;
-  rightIcon?: boolean;
+  startIcon?: boolean;
+  endIcon?: boolean;
 }) {
   return (
     <div style={{ padding: "40px", background: type === "inverted" ? "var(--color-background-fill-inverted-default)" : "var(--color-background-surface-secondary)" }}>
@@ -39,8 +38,8 @@ function LinkPlaygroundRender({
         size={size}
         fab={fab}
         disabled={disabled}
-        leftIcon={leftIcon ? <ChevronIcon /> : undefined}
-        rightIcon={rightIcon ? <ChevronIcon style={{ transform: "rotate(180deg)" }} /> : undefined}
+        startIcon={startIcon ? <ChevronIcon /> : undefined}
+        endIcon={endIcon ? <ChevronIcon style={{ transform: "rotate(180deg)" }} /> : undefined}
         onClick={action("link-click")}
       >
         {label}
@@ -56,8 +55,8 @@ export const LinkPlayground = {
     label: "Learn more",
     fab: false,
     disabled: false,
-    leftIcon: false,
-    rightIcon: false,
+    startIcon: false,
+    endIcon: false,
   },
   argTypes: {
     type: { control: "select", options: LINK_TYPES },
@@ -65,8 +64,8 @@ export const LinkPlayground = {
     label: { control: "text", if: { arg: "fab", truthy: false } },
     fab: { control: "boolean", description: "Icon-only link" },
     disabled: { control: "boolean" },
-    leftIcon: { control: "boolean" },
-    rightIcon: { control: "boolean" },
+    startIcon: { control: "boolean" },
+    endIcon: { control: "boolean" },
   },
   render: LinkPlaygroundRender,
 };
@@ -107,7 +106,7 @@ export function LinkAllStates() {
                     type={type}
                     size="medium"
                     disabled={state === "disabled"}
-                    leftIcon={<ChevronIcon />}
+                    startIcon={<ChevronIcon />}
                     onClick={action(`link-${type}-${state}`)}
                   >
                     Learn more
@@ -117,7 +116,7 @@ export function LinkAllStates() {
             ))}
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
               {(["x-small", "small", "medium", "large", "x-large"] as LinkButtonSize[]).map((s) => (
-                <LinkButton key={s} type={type} size={s} rightIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />} onClick={action(`link-${type}-${s}`)}>
+                <LinkButton key={s} type={type} size={s} endIcon={<ChevronIcon style={{ transform: "rotate(180deg)" }} />} onClick={action(`link-${type}-${s}`)}>
                   {s}
                 </LinkButton>
               ))}

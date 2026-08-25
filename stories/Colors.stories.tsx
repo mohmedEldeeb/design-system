@@ -1,4 +1,3 @@
-import React from "react";
 import type { CSSProperties } from "react";
 import { action } from "@storybook/addon-actions";
 import tailwindTokens from "../dist/json/tailwind-tokens.json";
